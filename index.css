@@ -26,6 +26,13 @@ section {
     height: 100dvh;
 }
 
+#timer {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
 #time {
     font-family: "San Fransisco Mono";
     font-size: 64px;
@@ -35,6 +42,10 @@ section {
     left: 50%;
     transform: translate(-50%, -50%);
     position: absolute;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 svg {
