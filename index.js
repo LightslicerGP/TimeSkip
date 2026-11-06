@@ -37,6 +37,7 @@ const STAGES = {
 const STAGE_ORDER = ["READY", "INSPECTION", "TIMING"];
 const decimalPlaces = 3;
 const holdDelay = 500;
+const showTimeWhileSolving = false;
 
 let currentStageIndex = 0;
 let isPressed = false;
@@ -137,9 +138,15 @@ function advanceStage() {
         updateStageUI();
         timingStartTime = performance.now();
 
+        if (!showTimeWhileSolving) {
+            timerTextElement.textContent = "Solving...";
+        }
+
         const updateTimer = () => {
             const elapsedMs = performance.now() - timingStartTime;
-            timerTextElement.textContent = formatTime(elapsedMs);
+            if (showTimeWhileSolving) {
+                timerTextElement.textContent = formatTime(elapsedMs);
+            }
             timingInterval = requestAnimationFrame(updateTimer);
         };
         timingInterval = requestAnimationFrame(updateTimer);
@@ -152,10 +159,12 @@ function handlePressDown() {
     const stageKey = STAGE_ORDER[currentStageIndex];
 
     if (stageKey === "TIMING") {
+        const elapsedMs = performance.now() - timingStartTime;
         if (timingInterval) {
             cancelAnimationFrame(timingInterval);
             timingInterval = null;
         }
+        timerTextElement.textContent = formatTime(elapsedMs);
         currentStageIndex = 0;
         isPressed = false;
         applyCurrentBackgroundColor();
