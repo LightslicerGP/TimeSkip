@@ -206,10 +206,12 @@ document.addEventListener("keyup", (event) => {
 });
 
 document.addEventListener("touchstart", (event) => {
+    if (event.target.closest("nav")) return;
     handlePressDown();
 }, { passive: true });
 
 document.addEventListener("touchend", (event) => {
+    if (event.target.closest("nav") && !isPressed) return;
     handlePressUp();
 }, { passive: true });
 

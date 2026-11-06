@@ -16,6 +16,12 @@
     -webkit-tap-highlight-color: transparent;
 }
 
+svg {
+    width: 32px;
+    height: 32px;
+    stroke: #ffffff;
+}
+
 .button {
     display: flex;
     align-items: center;
@@ -50,6 +56,12 @@ nav>#TL {
     left: 32px;
 }
 
+nav>#TR {
+    position: absolute;
+    top: 32px;
+    right: 32px;
+}
+
 #timer {
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -70,14 +82,4 @@ nav>#TL {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-}
-
-svg {
-    width: 32px;
-    height: 32px;
-    stroke: #ffffff;
-}
-
-#install-btn {
-    padding: 8px 12px;
 }
