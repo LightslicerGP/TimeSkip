@@ -56,4 +56,8 @@ svg {
 
 #install-btn {
     padding: 8px 12px;
+    position: fixed;
+    bottom: 32px;
+    left: 32px;
+    z-index: 1000;
 }
