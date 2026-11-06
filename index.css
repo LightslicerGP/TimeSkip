@@ -21,6 +21,11 @@ body {
     /* iOS notch space */
 }
 
+section {
+    width: 100dvw;
+    height: 100dvh;
+}
+
 #time {
     font-family: "San Fransisco Mono";
     font-size: 64px;
