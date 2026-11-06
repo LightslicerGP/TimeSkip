@@ -27,40 +27,77 @@ class Time {
     }
 }
 
-readyColor = "#0080ff";
-inspectionColor = "#ff4040";
-timingColor = "#00ff80";
-readyTimeMS = 250;
+const STAGES = {
+    READY: { normal: "#0080ff", bright: "#40a0ff" },
+    INSPECTION: { normal: "#ff4040", bright: "#ff7070" },
+    TIMING: { normal: "#00ff80", bright: "#40ffa0" }
+};
 
-timerBackgroundElement = document.getElementById("timer");
-timerTextElement = document.getElementById("time");
+const STAGE_ORDER = ["READY", "INSPECTION", "TIMING"];
+let currentStageIndex = 0;
+let isPressed = false;
 
-function init() {
-    timerBackgroundElement.style.backgroundColor = readyColor;
+const timerBackgroundElement = document.getElementById("timer");
+const timerTextElement = document.getElementById("time");
+
+function applyCurrentBackgroundColor() {
+    const stageKey = STAGE_ORDER[currentStageIndex];
+    const stage = STAGES[stageKey];
+    timerBackgroundElement.style.backgroundColor = isPressed ? stage.bright : stage.normal;
 }
 
-init();
-
-function startInspection() {
-    timerBackgroundElement.style.backgroundColor = inspectionColor;
+function advanceStage() {
+    currentStageIndex = (currentStageIndex + 1) % STAGE_ORDER.length;
 }
 
-document.addEventListener("touchstart", () => {
-    startInspection();
-});
+function handlePressDown() {
+    const stageKey = STAGE_ORDER[currentStageIndex];
+
+    if (stageKey === "TIMING") {
+        currentStageIndex = 0;
+        isPressed = false;
+        applyCurrentBackgroundColor();
+        return;
+    }
+
+    if (isPressed) return;
+    isPressed = true;
+    applyCurrentBackgroundColor();
+}
+
+function handlePressUp() {
+    if (!isPressed) return;
+    isPressed = false;
+    advanceStage();
+    applyCurrentBackgroundColor();
+}
 
 document.addEventListener("keydown", (event) => {
     if (event.code === "Space") {
         event.preventDefault();
+        if (!event.repeat) {
+            handlePressDown();
+        }
     }
 });
 
 document.addEventListener("keyup", (event) => {
     if (event.code === "Space") {
-        startInspection();
+        event.preventDefault();
+        handlePressUp();
     }
 });
 
-function startTiming() {
-    timerBackgroundElement.style.backgroundColor = timingColor;
-}
+document.addEventListener("touchstart", (event) => {
+    handlePressDown();
+}, { passive: true });
+
+document.addEventListener("touchend", (event) => {
+    handlePressUp();
+}, { passive: true });
+
+document.addEventListener("touchcancel", (event) => {
+    handlePressUp();
+}, { passive: true });
+
+applyCurrentBackgroundColor();
