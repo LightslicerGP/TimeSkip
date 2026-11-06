@@ -56,12 +56,16 @@ const fullscreenBtn = document.getElementById("fullscreenBtn");
 
 if (fullscreenBtn) {
     fullscreenBtn.addEventListener("click", () => {
-        if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().catch(() => { });
-        } else {
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
+        if (document.documentElement.requestFullscreen) {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => { });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
             }
+        } else {
+            console.warn("Fullscreen API is not supported on this iOS browser. Use 'Add to Home Screen' to run as a full-screen PWA.");
         }
     });
 }
