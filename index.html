@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TimeSkip</title>
+
+    <link rel="shortcut icon" type="image/png" href="Icons/PWATemplate.png" />
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="transparent" />
+    <meta name="description" content="An app to to keep track of your solve times." />
+    <link rel="stylesheet" href="https://hishamc24.github.io/MNMLUI/CSS/Styles.css">
+    <link rel="stylesheet" href="index.css" />
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+</head>
+
+<body>
+    <div id="install-btn" class="glassy button">Install PWA</div>
+    <section id="timer">
+        <div id="time">12.34</div>
+    </section>
+    <section id="times" class="removed"></section>
+    <section id="leaderboard" class="removed"></section>
+
+    <script src="index.js"></script>
+    <script src="pwa.js"></script>
+    <!-- <script type="module">
+        import { squircleObserver } from "https://esm.sh/corner-smoothing";
+
+        window.applySquircles = function applySquircles() {
+            const allElements = document.querySelectorAll("*");
+            allElements.forEach((el) => {
+                const style = getComputedStyle(el);
+                const radius = parseFloat(style.borderRadius);
+                if (radius > 0) {
+                    squircleObserver(el, {
+                        cornerRadius: radius,
+                        cornerSmoothing: 0.6,
+                        style: {
+                            fill: style.backgroundColor,
+                        },
+                    });
+                }
+            });
+        };
+
+        window.addEventListener("load", window.applySquircles);
+    </script> -->
+</body>
+
+</html>
