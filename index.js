@@ -15,15 +15,16 @@ class Time {
         const total = Math.max(0, Math.floor(this.totalMs));
         const minutes = Math.floor(total / 60_000);
         const seconds = Math.floor((total % 60_000) / 1000);
-        const ms = total % 1000;
-        const paddedMs = String(ms).padStart(3, "0");
+        const divisor = Math.pow(10, 3 - decimalPlaces);
+        const subMs = Math.floor((total % 1000) / divisor);
+        const paddedSubMs = String(subMs).padStart(decimalPlaces, "0");
         const paddedSeconds = String(seconds).padStart(2, "0");
 
         if (minutes > 0) {
-            return `${minutes}:${paddedSeconds}.${paddedMs}`;
+            return `${minutes}:${paddedSeconds}.${paddedSubMs}`;
         }
 
-        return `${seconds}.${paddedMs}`;
+        return `${seconds}.${paddedSubMs}`;
     }
 }
 
@@ -34,11 +35,37 @@ const STAGES = {
 };
 
 const STAGE_ORDER = ["READY", "INSPECTION", "TIMING"];
+const decimalPlaces = 3;
+const holdDelay = 500;
+
 let currentStageIndex = 0;
 let isPressed = false;
 
+let inspectionInterval = null;
+let inspectionTimeLeft = 15;
+let timingInterval = null;
+let timingStartTime = 0;
+
+let inspectionHoldTimeout = null;
+let inspectionReadyToStart = false;
+
 const timerBackgroundElement = document.getElementById("timer");
 const timerTextElement = document.getElementById("time");
+
+function clearAllTimers() {
+    if (inspectionInterval) {
+        clearInterval(inspectionInterval);
+        inspectionInterval = null;
+    }
+    if (timingInterval) {
+        cancelAnimationFrame(timingInterval);
+        timingInterval = null;
+    }
+    if (inspectionHoldTimeout) {
+        clearTimeout(inspectionHoldTimeout);
+        inspectionHoldTimeout = null;
+    }
+}
 
 function applyCurrentBackgroundColor() {
     const stageKey = STAGE_ORDER[currentStageIndex];
@@ -46,14 +73,76 @@ function applyCurrentBackgroundColor() {
     timerBackgroundElement.style.backgroundColor = isPressed ? stage.bright : stage.normal;
 }
 
+function updateStageUI() {
+    const stageKey = STAGE_ORDER[currentStageIndex];
+    applyCurrentBackgroundColor();
+
+    if (stageKey === "READY" && timerTextElement.textContent === "12.34") {
+        timerTextElement.textContent = "Ready";
+    } else if (stageKey === "INSPECTION") {
+        timerTextElement.textContent = inspectionTimeLeft;
+    }
+}
+
+function formatTime(elapsedMs) {
+    const total = Math.max(0, Math.floor(elapsedMs));
+    const minutes = Math.floor(total / 60_000);
+    const seconds = Math.floor((total % 60_000) / 1000);
+    const divisor = Math.pow(10, 3 - decimalPlaces);
+    const subMs = Math.floor((total % 1000) / divisor);
+
+    const paddedSubMs = String(subMs).padStart(decimalPlaces, "0");
+    const paddedSeconds = String(seconds).padStart(2, "0");
+
+    if (minutes > 0) {
+        return `${minutes}:${paddedSeconds}.${paddedSubMs}`;
+    }
+
+    return `${seconds}.${paddedSubMs}`;
+}
+
 function advanceStage() {
+    clearAllTimers();
     currentStageIndex = (currentStageIndex + 1) % STAGE_ORDER.length;
+    const stageKey = STAGE_ORDER[currentStageIndex];
+
+    if (stageKey === "INSPECTION") {
+        inspectionTimeLeft = 15;
+        inspectionReadyToStart = false;
+        updateStageUI();
+        inspectionInterval = setInterval(() => {
+            if (inspectionTimeLeft > 0) {
+                inspectionTimeLeft--;
+                timerTextElement.textContent = inspectionTimeLeft;
+            }
+            if (inspectionTimeLeft <= 0) {
+                clearInterval(inspectionInterval);
+                inspectionInterval = null;
+            }
+        }, 1000);
+    } else if (stageKey === "TIMING") {
+        updateStageUI();
+        timingStartTime = performance.now();
+
+        const updateTimer = () => {
+            const elapsedMs = performance.now() - timingStartTime;
+            timerTextElement.textContent = formatTime(elapsedMs);
+            timingInterval = requestAnimationFrame(updateTimer);
+        };
+        timingInterval = requestAnimationFrame(updateTimer);
+    } else {
+        updateStageUI();
+    }
 }
 
 function handlePressDown() {
     const stageKey = STAGE_ORDER[currentStageIndex];
 
     if (stageKey === "TIMING") {
+        if (timingInterval) {
+            cancelAnimationFrame(timingInterval);
+            timingInterval = null;
+        }
         currentStageIndex = 0;
         isPressed = false;
         applyCurrentBackgroundColor();
@@ -62,14 +151,42 @@ function handlePressDown() {
 
     if (isPressed) return;
     isPressed = true;
-    applyCurrentBackgroundColor();
+
+    if (stageKey === "INSPECTION") {
+        inspectionReadyToStart = false;
+        applyCurrentBackgroundColor();
+        inspectionHoldTimeout = setTimeout(() => {
+            inspectionReadyToStart = true;
+            timerBackgroundElement.style.backgroundColor = STAGES.TIMING.bright;
+        }, holdDelay);
+    } else {
+        applyCurrentBackgroundColor();
+    }
 }
 
 function handlePressUp() {
-    if (!isPressed) return;
+    const stageKey = STAGE_ORDER[currentStageIndex];
+
+    if (!isPressed && stageKey !== "TIMING") return;
+
+    if (stageKey === "INSPECTION") {
+        if (inspectionHoldTimeout) {
+            clearTimeout(inspectionHoldTimeout);
+            inspectionHoldTimeout = null;
+        }
+
+        if (inspectionReadyToStart) {
+            isPressed = false;
+            advanceStage();
+        } else {
+            isPressed = false;
+            applyCurrentBackgroundColor();
+        }
+        return;
+    }
+
     isPressed = false;
     advanceStage();
-    applyCurrentBackgroundColor();
 }
 
 document.addEventListener("keydown", (event) => {
@@ -100,4 +217,4 @@ document.addEventListener("touchcancel", (event) => {
     handlePressUp();
 }, { passive: true });
 
-applyCurrentBackgroundColor();
+updateStageUI();
