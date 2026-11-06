@@ -51,6 +51,19 @@ let inspectionReadyToStart = false;
 
 const timerBackgroundElement = document.getElementById("timer");
 const timerTextElement = document.getElementById("time");
+const fullscreenBtn = document.getElementById("fullscreenBtn");
+
+if (fullscreenBtn) {
+    fullscreenBtn.addEventListener("click", () => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(() => { });
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
+    });
+}
 
 function clearAllTimers() {
     if (inspectionInterval) {
