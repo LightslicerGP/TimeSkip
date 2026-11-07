@@ -176,6 +176,8 @@ function advanceStage() {
 }
 
 function handlePressDown() {
+    if (timerBackgroundElement.classList.contains("removed")) return;
+
     const stageKey = STAGE_ORDER[currentStageIndex];
 
     if (stageKey === "TIMING") {
@@ -207,6 +209,8 @@ function handlePressDown() {
 }
 
 function handlePressUp() {
+    if (timerBackgroundElement.classList.contains("removed")) return;
+
     const stageKey = STAGE_ORDER[currentStageIndex];
 
     if (!isPressed && stageKey !== "TIMING") return;

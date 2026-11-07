@@ -37,6 +37,7 @@ svg {
 
 body {
     padding-top: env(safe-area-inset-top);
+    margin-bottom: 0px;
     /* iOS notch space */
 }
 
@@ -83,4 +84,8 @@ nav>#BR {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+}
+
+#settings {
+    margin-bottom: 128px;
 }
