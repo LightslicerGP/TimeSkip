@@ -53,22 +53,27 @@ let inspectionReadyToStart = false;
 const timerBackgroundElement = document.getElementById("timer");
 const timerTextElement = document.getElementById("time");
 const fullscreenBtn = document.getElementById("fullscreenBtn");
+const settingsBtn = document.getElementById("settingsBtn");
+const settingsSection = document.getElementById("settings");
 
-if (fullscreenBtn) {
-    fullscreenBtn.addEventListener("click", () => {
-        if (document.documentElement.requestFullscreen) {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(() => { });
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                }
-            }
+fullscreenBtn.addEventListener("click", () => {
+    if (document.documentElement.requestFullscreen) {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(() => { });
         } else {
-            console.warn("Fullscreen API is not supported on this iOS browser. Use 'Add to Home Screen' to run as a full-screen PWA.");
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
         }
-    });
-}
+    } else {
+        console.warn("Fullscreen API is not supported on this iOS browser. Use 'Add to Home Screen' to run as a full-screen PWA.");
+    }
+});
+
+settingsBtn.addEventListener("click", () => {
+    settingsSection.classList.remove("removed");
+    timerBackgroundElement.classList.add("removed");
+});
 
 function clearAllTimers() {
     if (inspectionInterval) {

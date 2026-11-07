@@ -45,19 +45,14 @@ section {
     height: 100dvh;
 }
 
-#nav {
-    position: fixed;
-    z-index: 10;
-}
-
 nav>#TL {
-    position: absolute;
+    position: fixed;
     top: 32px;
     left: 32px;
 }
 
 nav>#TR {
-    position: absolute;
+    position: fixed;
     top: 32px;
     right: 32px;
 }
