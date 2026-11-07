@@ -24,7 +24,7 @@
 svg {
     width: 32px;
     height: 32px;
-    stroke: #ffffff;
+    stroke: #000000;
 }
 
 .button {
@@ -109,4 +109,10 @@ nav>#BR {
 
 #settings {
     margin-bottom: 128px;
+}
+
+@media (prefers-color-scheme: dark) {
+    svg {
+        stroke: #ffffff;
+    }
 }

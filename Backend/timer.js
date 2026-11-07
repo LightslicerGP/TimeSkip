@@ -38,6 +38,7 @@ const STAGE_ORDER = ["READY", "INSPECTION", "TIMING"];
 const decimalPlaces = 3;
 const holdDelay = 500;
 const showTimeWhileSolving = () => localStorage.getItem("showTimeWhileSolving") === "true";
+const showScramblePref = () => localStorage.getItem("showScramble") === "true";
 
 let currentStageIndex = 0;
 let isPressed = false;
@@ -52,6 +53,7 @@ let inspectionReadyToStart = false;
 
 const timerBackgroundElement = document.getElementById("timer");
 const timerTextElement = document.getElementById("time");
+const scrambleElement = document.getElementById("scramble");
 const navElement = document.querySelector("#timer nav");
 const fullscreenBtn = document.getElementById("fullscreenBtn");
 const settingsBtn = document.getElementById("settingsBtn");
@@ -106,10 +108,22 @@ function updateNavVisibility() {
     }
 }
 
+export function updateScrambleVisibility() {
+    if (!scrambleElement) return;
+    const stageKey = STAGE_ORDER[currentStageIndex];
+
+    if (stageKey === "READY" && showScramblePref()) {
+        scrambleElement.classList.remove("removed");
+    } else {
+        scrambleElement.classList.add("removed");
+    }
+}
+
 function updateStageUI() {
     const stageKey = STAGE_ORDER[currentStageIndex];
     applyCurrentBackgroundColor();
     updateNavVisibility();
+    updateScrambleVisibility();
 
     if (stageKey === "READY") {
         if (!timerTextElement.textContent || timerTextElement.textContent === "Ready") {
