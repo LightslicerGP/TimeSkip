@@ -8,6 +8,11 @@
     src: url("Fonts/SFMono-Regular.otf");
 }
 
+@font-face {
+    font-family: "San Fransisco Mono Bold";
+    src: url("Fonts/SFMono-Bold.otf");
+}
+
 * {
     margin: 0;
     border: 0;
@@ -72,7 +77,7 @@ nav>#BR {
 }
 
 #time {
-    font-family: "San Fransisco Mono";
+    font-family: "San Fransisco Mono Bold";
     font-size: 64px;
     color: #ffffff;
     opacity: 0.9;
@@ -80,6 +85,22 @@ nav>#BR {
     left: 50%;
     transform: translate(-50%, -50%);
     position: absolute;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+#scramble {
+    font-family: "San Fransisco Mono";
+    position: absolute;
+    top: calc(50% + 48px);
+    left: 50%;
+    transform: translateX(-50%);
+    color: #ffffff;
+    opacity: 0.9;
+    font-size: 16px;
+    width: 196px;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
