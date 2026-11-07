@@ -189,6 +189,16 @@ function handlePressDown() {
             timingInterval = null;
         }
         timerTextElement.textContent = formatTime(elapsedMs);
+
+        const minutes = Math.floor(elapsedMs / 60_000);
+        const seconds = Math.floor((elapsedMs % 60_000) / 1000);
+        const ms = Math.floor(elapsedMs % 1000);
+        const newTime = new Time(ms, seconds, minutes);
+
+        const savedTimes = JSON.parse(localStorage.getItem("solveTimes") || "[]");
+        savedTimes.push(newTime);
+        localStorage.setItem("solveTimes", JSON.stringify(savedTimes));
+
         currentStageIndex = 0;
         isPressed = false;
         updateStageUI();
