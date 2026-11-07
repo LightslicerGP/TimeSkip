@@ -3,7 +3,7 @@ class Time {
         this.ms = Number(ms) || 0;
         this.seconds = Number(seconds) || 0;
         this.minutes = Number(minutes) || 0;
-        this.category = String(category ?? "");
+        this.category = String(category ?? "3x3");
         this.datetime = new Date().toISOString();
     }
 
@@ -112,7 +112,9 @@ function updateStageUI() {
     updateNavVisibility();
 
     if (stageKey === "READY") {
-        timerTextElement.textContent = "Ready";
+        if (!timerTextElement.textContent || timerTextElement.textContent === "Ready") {
+            timerTextElement.textContent = "Ready";
+        }
     } else if (stageKey === "INSPECTION") {
         timerTextElement.textContent = inspectionTimeLeft;
     }
