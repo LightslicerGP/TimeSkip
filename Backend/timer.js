@@ -37,7 +37,7 @@ const STAGES = {
 const STAGE_ORDER = ["READY", "INSPECTION", "TIMING"];
 const decimalPlaces = 3;
 const holdDelay = 500;
-const showTimeWhileSolving = false;
+const showTimeWhileSolving = () => localStorage.getItem("showTimeWhileSolving") === "true";
 
 let currentStageIndex = 0;
 let isPressed = false;

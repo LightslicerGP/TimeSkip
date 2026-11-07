@@ -57,6 +57,12 @@ nav>#TR {
     right: 32px;
 }
 
+nav>#BR {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+}
+
 #timer {
     -webkit-user-select: none;
     -moz-user-select: none;
