@@ -52,6 +52,7 @@ let inspectionReadyToStart = false;
 
 const timerBackgroundElement = document.getElementById("timer");
 const timerTextElement = document.getElementById("time");
+const navElement = document.querySelector("#timer nav");
 const fullscreenBtn = document.getElementById("fullscreenBtn");
 const settingsBtn = document.getElementById("settingsBtn");
 const settingsSection = document.getElementById("settings");
@@ -96,11 +97,21 @@ function applyCurrentBackgroundColor() {
     timerBackgroundElement.style.backgroundColor = isPressed ? stage.bright : stage.normal;
 }
 
+function updateNavVisibility() {
+    const stageKey = STAGE_ORDER[currentStageIndex];
+    if (stageKey === "INSPECTION" || stageKey === "TIMING") {
+        navElement.classList.add("removed");
+    } else {
+        navElement.classList.remove("removed");
+    }
+}
+
 function updateStageUI() {
     const stageKey = STAGE_ORDER[currentStageIndex];
     applyCurrentBackgroundColor();
+    updateNavVisibility();
 
-    if (stageKey === "READY" && timerTextElement.textContent === "12.34") {
+    if (stageKey === "READY") {
         timerTextElement.textContent = "Ready";
     } else if (stageKey === "INSPECTION") {
         timerTextElement.textContent = inspectionTimeLeft;
@@ -147,13 +158,13 @@ function advanceStage() {
         updateStageUI();
         timingStartTime = performance.now();
 
-        if (!showTimeWhileSolving) {
+        if (!showTimeWhileSolving()) {
             timerTextElement.textContent = "Solving...";
         }
 
         const updateTimer = () => {
             const elapsedMs = performance.now() - timingStartTime;
-            if (showTimeWhileSolving) {
+            if (showTimeWhileSolving()) {
                 timerTextElement.textContent = formatTime(elapsedMs);
             }
             timingInterval = requestAnimationFrame(updateTimer);
@@ -176,7 +187,7 @@ function handlePressDown() {
         timerTextElement.textContent = formatTime(elapsedMs);
         currentStageIndex = 0;
         isPressed = false;
-        applyCurrentBackgroundColor();
+        updateStageUI();
         return;
     }
 
