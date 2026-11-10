@@ -119,6 +119,33 @@ export function updateScrambleVisibility() {
     }
 }
 
+function generateScramble(length = 20) {
+    const sides = ["U", "R", "F", "D", "L", "B"];
+    const moves = ["", "2", "'"];
+    const opposites = {
+        "U": "D", "D": "U",
+        "R": "L", "L": "R",
+        "F": "B", "B": "F"
+    };
+    const scramble = [];
+    let lastSide = null;
+
+    for (let i = 0; i < length; i++) {
+        const availableSides = sides.filter(side =>
+            side !== lastSide && side !== opposites[lastSide]
+        );
+
+        const side = availableSides[Math.floor(Math.random() * availableSides.length)];
+        const move = moves[Math.floor(Math.random() * moves.length)];
+
+        scramble.push(side + move);
+        lastSide = side;
+
+
+    }
+    return scramble.join(" ");
+}
+
 function updateStageUI() {
     const stageKey = STAGE_ORDER[currentStageIndex];
     applyCurrentBackgroundColor();
@@ -126,9 +153,7 @@ function updateStageUI() {
     updateScrambleVisibility();
 
     if (stageKey === "READY") {
-        if (!timerTextElement.textContent || timerTextElement.textContent === "Ready") {
-            timerTextElement.textContent = "Ready";
-        }
+        scrambleElement.textContent = generateScramble(20);
     } else if (stageKey === "INSPECTION") {
         timerTextElement.textContent = inspectionTimeLeft;
     }
