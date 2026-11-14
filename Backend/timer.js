@@ -146,6 +146,12 @@ function generateScramble(length = 20) {
     return scramble.join(" ");
 }
 
+export function refreshScramble() {
+    if (!scrambleElement) return;
+    const customLength = parseInt(localStorage.getItem("scrambleLength"), 10) || 20;
+    scrambleElement.textContent = generateScramble(customLength);
+}
+
 function updateStageUI() {
     const stageKey = STAGE_ORDER[currentStageIndex];
     applyCurrentBackgroundColor();
@@ -153,7 +159,8 @@ function updateStageUI() {
     updateScrambleVisibility();
 
     if (stageKey === "READY") {
-        scrambleElement.textContent = generateScramble(20);
+        const customLength = parseInt(localStorage.getItem("scrambleLength"), 10) || 20;
+        scrambleElement.textContent = generateScramble(customLength);
     } else if (stageKey === "INSPECTION") {
         timerTextElement.textContent = inspectionTimeLeft;
     }

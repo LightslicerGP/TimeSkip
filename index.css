@@ -111,6 +111,10 @@ nav>#BR {
     margin-bottom: 128px;
 }
 
+#scrambleLength>span {
+    font-family: "San Fransisco Mono";
+}
+
 @media (prefers-color-scheme: dark) {
     svg {
         stroke: #ffffff;

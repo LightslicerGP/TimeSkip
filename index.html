@@ -10,7 +10,6 @@
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="transparent" />
     <meta name="description" content="An app to to keep track of your solve times." />
-    <link rel="stylesheet" href="https://hishamc24.github.io/MNMLUI/CSS/Main.css">
     <link rel="stylesheet" href="index.css" />
 
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -84,21 +83,29 @@
             <label class="switch">
                 <span>Show time during solve</span>
                 <input id="showTimeDuringSolveSwitch" type="checkbox">
-                <span class="slider-track"></span>
+                <span class="switch-track"></span>
             </label>
             <label class="switch">
                 <span>Show scramble</span>
                 <input id="showScramble" type="checkbox">
-                <span class="slider-track"></span>
+                <span class="switch-track"></span>
             </label>
             <label class="slider">
                 <span>Scramble length</span>
-                <input type="range" min="0" max="10" value="4">
+                <div id="scrambleLength" class="slider-row">
+                    <span class="slider-side">12</span>
+                    <div class="slider-wrapper">
+                        <div class="slider-progress"></div>
+                        <div class="slider-ticks"></div>
+                        <input type="range" min="12" max="22">
+                    </div>
+                </div>
             </label>
         </div>
     </section>
 
     <script type="module" src="index.js"></script>
+    <script src="https://hishamc24.github.io/MNMLUI/MNMLUI.js"></script>
     <script src="pwa.js"></script>
     <!-- <script type="module">
         import { squircleObserver } from "https://esm.sh/corner-smoothing";
