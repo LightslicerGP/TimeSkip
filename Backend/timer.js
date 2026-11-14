@@ -58,6 +58,8 @@ const navElement = document.querySelector("#timer nav");
 const fullscreenBtn = document.getElementById("fullscreenBtn");
 const settingsBtn = document.getElementById("settingsBtn");
 const settingsSection = document.getElementById("settings");
+const timesBtn = document.getElementById("timesBtn");
+const timesSection = document.getElementById("times");
 
 fullscreenBtn.addEventListener("click", () => {
     if (document.documentElement.requestFullscreen) {
@@ -75,6 +77,11 @@ fullscreenBtn.addEventListener("click", () => {
 
 settingsBtn.addEventListener("click", () => {
     settingsSection.classList.remove("removed");
+    timerBackgroundElement.classList.add("removed");
+});
+
+timesBtn.addEventListener("click", () => {
+    timesSection.classList.remove("removed");
     timerBackgroundElement.classList.add("removed");
 });
 
