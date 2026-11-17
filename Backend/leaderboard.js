@@ -1,4 +1,5 @@
 import { recalculateRanks } from "./timer.js";
+import { formatSolveTime, getOrdinalSuffixAbbr } from "./formatters.js";
 
 const viewLeaderboardBtn = document.getElementById("viewLeaderboard");
 const leaderboardSection = document.getElementById("leaderboard");
@@ -6,24 +7,6 @@ const leaderboardBackBtn = document.getElementById("leaderboardBackBtn");
 const timesSection = document.getElementById("times");
 const timerSection = document.getElementById("timer");
 const settingsSection = document.getElementById("settings");
-
-function formatSolveTime(solve) {
-    const totalMs = (solve.minutes || 0) * 60_000 + (solve.seconds || 0) * 1000 + (solve.ms || 0);
-    const total = Math.max(0, Math.floor(totalMs));
-    const minutes = Math.floor(total / 60_000);
-    const seconds = Math.floor((total % 60_000) / 1000);
-    const decimalPlaces = 3;
-    const divisor = Math.pow(10, 3 - decimalPlaces);
-    const subMs = Math.floor((total % 1000) / divisor);
-
-    const paddedSubMs = String(subMs).padStart(decimalPlaces, "0");
-    const paddedSeconds = String(seconds).padStart(2, "0");
-
-    if (minutes > 0) {
-        return `${minutes}:${paddedSeconds}.${paddedSubMs}`;
-    }
-    return `${seconds}.${paddedSubMs}`;
-}
 
 export function renderLeaderboard() {
     const leaderboardCard = leaderboardSection.querySelector(".card");
@@ -37,7 +20,6 @@ export function renderLeaderboard() {
     }
 
     savedTimes = recalculateRanks(savedTimes);
-
     savedTimes.sort((a, b) => a.ordinalRank - b.ordinalRank);
 
     leaderboardCard.innerHTML = "";
@@ -59,20 +41,12 @@ export function renderLeaderboard() {
     });
 }
 
-function getOrdinalSuffixAbbr(n) {
-    const s = ["th", "st", "nd", "rd"];
-    const v = n % 100;
-    return s[(v - 20) % 10] || s[v] || s[0];
-}
-
 if (viewLeaderboardBtn) {
     viewLeaderboardBtn.addEventListener("click", () => {
-        // Hide everything else by adding 'removed'
         timerSection.classList.add("removed");
         timesSection.classList.add("removed");
         settingsSection.classList.add("removed");
 
-        // Show leaderboard
         renderLeaderboard();
         leaderboardSection.classList.remove("removed");
     });
@@ -81,6 +55,6 @@ if (viewLeaderboardBtn) {
 if (leaderboardBackBtn) {
     leaderboardBackBtn.addEventListener("click", () => {
         leaderboardSection.classList.add("removed");
-        timesSection.classList.remove("removed"); // Return back to the times section
+        timesSection.classList.remove("removed");
     });
 }
