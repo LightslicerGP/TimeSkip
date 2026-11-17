@@ -115,6 +115,58 @@ nav>#BR {
     font-family: "San Fransisco Mono";
 }
 
+#times>.card {
+    padding: 0px;
+}
+
+.timelistItem {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    grid-template-rows: auto auto;
+    grid-template-areas:
+        "time dnf options"
+        "date number options";
+    gap: 4px 16px;
+    padding: 20px 24px;
+}
+
+.timelistTime {
+    grid-area: time;
+    font-size: 32px;
+    align-self: start;
+    padding: 0;
+}
+
+.timelistDate {
+    grid-area: date;
+    color: #808080;
+    align-self: end;
+    padding: 0;
+}
+
+.timelistModification {
+    grid-area: dnf;
+    font-size: 8px;
+    text-align: right;
+    color: #808080;
+    align-self: start;
+    text-transform: uppercase;
+}
+
+.timelistNumber {
+    grid-area: number;
+    text-align: right;
+    align-self: end;
+}
+
+.timelistOptions {
+    grid-area: options;
+    width: 24px;
+    height: 24px;
+    align-self: center;
+    justify-self: end;
+}
+
 @media (prefers-color-scheme: dark) {
     svg {
         stroke: #ffffff;

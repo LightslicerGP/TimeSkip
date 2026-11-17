@@ -8,6 +8,11 @@ export class Time {
         this.minutes = Number(minutes) || 0;
         this.category = String(category ?? "3x3");
         this.datetime = new Date().toISOString();
+
+        const storageKey = `solveCount_${this.category}`;
+        const nextSolveNumber = (parseInt(localStorage.getItem(storageKey), 10) || 0) + 1;
+        localStorage.setItem(storageKey, nextSolveNumber);
+        this.solveNumber = nextSolveNumber;
     }
 
     get totalMs() {
@@ -212,7 +217,9 @@ function handlePressDown() {
         const minutes = Math.floor(elapsedMs / 60_000);
         const seconds = Math.floor((elapsedMs % 60_000) / 1000);
         const ms = Math.floor(elapsedMs % 1000);
-        const newTime = new Time(ms, seconds, minutes);
+
+        const currentCategory = "3x3";
+        const newTime = new Time(ms, seconds, minutes, currentCategory);
 
         const savedTimes = JSON.parse(localStorage.getItem("solveTimes") || "[]");
         savedTimes.push(newTime);
