@@ -42,13 +42,30 @@ svg {
 
 body {
     padding-top: env(safe-area-inset-top);
-    margin-bottom: 0px !important;
     /* iOS notch space */
+    /* margin-bottom: 0px !important; */
+    overflow-x: hidden;
+}
+
+body:has(#timer:not(.removed)) {
+    margin-bottom: 0px !important;
 }
 
 section {
     width: 100dvw;
+    min-height: 100dvh;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+#timer {
     height: 100dvh;
+    overflow: hidden;
+    position: relative;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 nav>#TL {
@@ -69,11 +86,10 @@ nav>#BR {
     right: 32px;
 }
 
-#timer {
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
+nav>#BL {
+    position: fixed;
+    bottom: 32px;
+    left: 32px;
 }
 
 #time {
@@ -120,6 +136,7 @@ nav>#BR {
 }
 
 .timelistItem {
+    position: relative;
     display: grid;
     grid-template-columns: 1fr auto auto;
     grid-template-rows: auto auto;
@@ -127,7 +144,22 @@ nav>#BR {
         "time dnf options"
         "date number options";
     gap: 4px 16px;
-    padding: 20px 24px;
+    padding: 24px;
+}
+
+.timelistItem::after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: 48px;
+    width: calc(100% - 96px);
+    height: 4px;
+    border-radius: 2px;
+    background-color: #F2F2F2;
+}
+
+.timelistItem:last-child::after {
+    display: none;
 }
 
 .timelistTime {
@@ -170,5 +202,9 @@ nav>#BR {
 @media (prefers-color-scheme: dark) {
     svg {
         stroke: #ffffff;
+    }
+
+    .timelistItem::after {
+        background-color: #0D0D0D;
     }
 }
