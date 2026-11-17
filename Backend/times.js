@@ -5,21 +5,64 @@ import { getSavedTimes, recalculateRanks, showSection } from "./storage.js";
 const timesCard = document.querySelector("#times .card");
 const timesBtn = document.getElementById("timesBtn");
 const timesBackBtn = document.getElementById("timesBackBtn");
+const switchSortOrderBtn = document.getElementById("switchSortOrder");
+
+// --- State ---
+const SORT_MODES = ["newest-oldest", "oldest-newest", "quickest-slowest", "slowest-quickest"];
+const SORT_LABELS = {
+    "newest-oldest": "Sorted: Newest to Oldest",
+    "oldest-newest": "Sorted: Oldest to Newest",
+    "quickest-slowest": "Sorted: Quickest to Slowest",
+    "slowest-quickest": "Sorted: Slowest to Quickest"
+};
+let currentSortIndex = 0;
+
+// --- Popup Notification Helper ---
+function showSortPopup(message) {
+    let popup = document.querySelector(".sort-popup");
+    if (!popup) {
+        popup = document.createElement("div");
+        popup.className = "sort-popup glassy";
+        document.body.appendChild(popup);
+    }
+
+    popup.textContent = message;
+    popup.classList.add("visible");
+
+    clearTimeout(popup._hideTimeout);
+    popup._hideTimeout = setTimeout(() => {
+        popup.classList.remove("visible");
+    }, 2000);
+}
 
 // --- Render ---
 export function renderTimes() {
     if (!timesCard) return;
 
-    const savedTimes = recalculateRanks(getSavedTimes());
+    let savedTimes = recalculateRanks(getSavedTimes());
 
     if (savedTimes.length === 0) {
         timesCard.innerHTML = `<p style="padding: 24px; color: #808080; text-align: center;">No solves yet</p>`;
         return;
     }
 
+    const mode = SORT_MODES[currentSortIndex];
+    savedTimes.sort((a, b) => {
+        const timeA = getSolveTotalMs(a);
+        const timeB = getSolveTotalMs(b);
+        const dateA = new Date(a.datetime).getTime();
+        const dateB = new Date(b.datetime).getTime();
+
+        if (mode === "newest-oldest") return dateB - dateA;
+        if (mode === "oldest-newest") return dateA - dateB;
+        if (mode === "quickest-slowest") return timeA - timeB;
+        if (mode === "slowest-quickest") return timeB - timeA;
+        return 0;
+    });
+
     timesCard.innerHTML = "";
 
-    [...savedTimes].reverse().forEach((solve) => {
+    savedTimes.forEach((solve) => {
         const timeStr = formatMs(getSolveTotalMs(solve));
         const dateStr = formatDate(solve.datetime);
         const numberStr = solve.ordinalRank ? getOrdinalSuffix(solve.ordinalRank) : "";
@@ -52,3 +95,9 @@ timesBtn?.addEventListener("click", () => {
 });
 
 timesBackBtn?.addEventListener("click", () => showSection("timer"));
+
+switchSortOrderBtn?.addEventListener("click", () => {
+    currentSortIndex = (currentSortIndex + 1) % SORT_MODES.length;
+    renderTimes();
+    showSortPopup(SORT_LABELS[SORT_MODES[currentSortIndex]]);
+});

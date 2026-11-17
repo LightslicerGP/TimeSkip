@@ -199,6 +199,28 @@ nav>#BL {
     justify-self: end;
 }
 
+/* Temporary Popup Styling */
+.sort-popup {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    /* background-color: rgba(0, 0, 0, 0.85); */
+    color: #000000;
+    padding: 12px 24px;
+    border-radius: 32px;
+    font-size: 12px;
+    z-index: 1000;
+    opacity: 0;
+    transition: transform 0.25s ease-in-out, opacity 0.25s ease-in-out;
+    pointer-events: none;
+}
+
+.sort-popup.visible {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
 @media (prefers-color-scheme: dark) {
     svg {
         stroke: #ffffff;
@@ -206,5 +228,11 @@ nav>#BL {
 
     .timelistItem::after {
         background-color: #0D0D0D;
+    }
+
+    .sort-popup {
+        background-color: rgba(255, 255, 255, 0.9);
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 }
