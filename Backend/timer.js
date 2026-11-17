@@ -1,156 +1,71 @@
-const DECIMAL_PLACES = 3;
+import { formatMs, getSolveTotalMs } from "./formatters.js";
+import { getSavedTimes, saveTimes, showSection } from "./storage.js";
+
+// --- Constants ---
 const HOLD_DELAY = 500;
-
-export class Time {
-    constructor(ms = 0, seconds = 0, minutes = 0, category = "") {
-        this.ms = Number(ms) || 0;
-        this.seconds = Number(seconds) || 0;
-        this.minutes = Number(minutes) || 0;
-        this.category = String(category ?? "3x3");
-        this.datetime = new Date().toISOString();
-        this.ordinalRank = 0;
-    }
-
-    get totalMs() {
-        return this.minutes * 60_000 + this.seconds * 1000 + this.ms;
-    }
-
-    toString() {
-        return formatElapsedTime(this.totalMs);
-    }
-}
-
-export function recalculateRanks(savedTimes) {
-    const categories = [...new Set(savedTimes.map(t => t.category || "3x3"))];
-
-    categories.forEach(cat => {
-        const catTimes = savedTimes.filter(t => (t.category || "3x3") === cat);
-
-        catTimes.sort((a, b) => {
-            const getMs = (s) => (s.minutes || 0) * 60_000 + (s.seconds || 0) * 1000 + (s.ms || 0);
-            return getMs(a) - getMs(b);
-        });
-
-        catTimes.forEach((solve, index) => {
-            solve.ordinalRank = index + 1;
-        });
-    });
-
-    return savedTimes;
-}
-
-function formatElapsedTime(elapsedMs) {
-    const total = Math.max(0, Math.floor(elapsedMs));
-    const minutes = Math.floor(total / 60_000);
-    const seconds = Math.floor((total % 60_000) / 1000);
-    const divisor = Math.pow(10, 3 - DECIMAL_PLACES);
-    const subMs = Math.floor((total % 1000) / divisor);
-
-    const paddedSubMs = String(subMs).padStart(DECIMAL_PLACES, "0");
-    const paddedSeconds = String(seconds).padStart(2, "0");
-
-    if (minutes > 0) {
-        return `${minutes}:${paddedSeconds}.${paddedSubMs}`;
-    }
-
-    return `${seconds}.${paddedSubMs}`;
-}
-
+const STAGE_ORDER = ["READY", "INSPECTION", "TIMING"];
 const STAGES = {
     READY: { normal: "#0080ff", bright: "#40a0ff" },
     INSPECTION: { normal: "#ff4040", bright: "#ff7070" },
     TIMING: { normal: "#00ff80", bright: "#40ffa0" }
 };
+const SCRAMBLE_SIDES = ["U", "R", "F", "D", "L", "B"];
+const SCRAMBLE_MOVES = ["", "2", "'"];
+const SCRAMBLE_OPPOSITES = { U: "D", D: "U", R: "L", L: "R", F: "B", B: "F" };
 
-const STAGE_ORDER = ["READY", "INSPECTION", "TIMING"];
-const showTimeWhileSolving = () => localStorage.getItem("showTimeWhileSolving") === "true";
-const showScramblePref = () => localStorage.getItem("showScramble") === "true";
+// --- DOM Elements ---
+const timerSection = document.getElementById("timer");
+const timerTextEl = document.getElementById("time");
+const scrambleEl = document.getElementById("scramble");
+const navEl = document.querySelector("#timer nav");
+const fullscreenBtn = document.getElementById("fullscreenBtn");
+const settingsBtn = document.getElementById("settingsBtn");
 
+// --- State ---
 let currentStageIndex = 0;
 let isPressed = false;
 let inspectionInterval = null;
 let inspectionTimeLeft = 15;
-let timingInterval = null;
-let timingStartTime = 0;
 let inspectionHoldTimeout = null;
 let inspectionReadyToStart = false;
+let timingInterval = null;
+let timingStartTime = 0;
 
-const timerBackgroundElement = document.getElementById("timer");
-const timerTextElement = document.getElementById("time");
-const scrambleElement = document.getElementById("scramble");
-const navElement = document.querySelector("#timer nav");
-const fullscreenBtn = document.getElementById("fullscreenBtn");
-const settingsBtn = document.getElementById("settingsBtn");
-const settingsSection = document.getElementById("settings");
-const timesBtn = document.getElementById("timesBtn");
-const timesSection = document.getElementById("times");
-
-fullscreenBtn.addEventListener("click", () => {
-    if (!document.documentElement.requestFullscreen) {
-        console.warn("Fullscreen API is not supported on this browser.");
-        return;
+// --- Data Model ---
+export class Time {
+    constructor(ms = 0, seconds = 0, minutes = 0, category = "3x3") {
+        this.ms = Number(ms) || 0;
+        this.seconds = Number(seconds) || 0;
+        this.minutes = Number(minutes) || 0;
+        this.category = String(category || "3x3");
+        this.datetime = new Date().toISOString();
+        this.ordinalRank = 0;
     }
-    if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(() => { });
-    } else if (document.exitFullscreen) {
-        document.exitFullscreen();
-    }
-});
 
-settingsBtn.addEventListener("click", () => {
-    settingsSection.classList.remove("removed");
-    timerBackgroundElement.classList.add("removed");
-});
-
-timesBtn.addEventListener("click", () => {
-    timesSection.classList.remove("removed");
-    timerBackgroundElement.classList.add("removed");
-});
-
-function clearAllTimers() {
-    if (inspectionInterval) {
-        clearInterval(inspectionInterval);
-        inspectionInterval = null;
+    get totalMs() {
+        return getSolveTotalMs(this);
     }
-    if (timingInterval) {
-        cancelAnimationFrame(timingInterval);
-        timingInterval = null;
-    }
-    if (inspectionHoldTimeout) {
-        clearTimeout(inspectionHoldTimeout);
-        inspectionHoldTimeout = null;
+
+    toString() {
+        return formatMs(this.totalMs);
     }
 }
 
-function applyCurrentBackgroundColor() {
-    const stageKey = STAGE_ORDER[currentStageIndex];
-    const stage = STAGES[stageKey];
-    timerBackgroundElement.style.backgroundColor = isPressed ? stage.bright : stage.normal;
-}
+// --- Preferences ---
+const showTimeWhileSolving = () => localStorage.getItem("showTimeWhileSolving") === "true";
+const showScramblePref = () => localStorage.getItem("showScramble") === "true";
 
-function updateNavVisibility() {
-    const stageKey = STAGE_ORDER[currentStageIndex];
-    navElement.classList.toggle("removed", stageKey === "INSPECTION" || stageKey === "TIMING");
-}
-
-export function updateScrambleVisibility() {
-    if (!scrambleElement) return;
-    const stageKey = STAGE_ORDER[currentStageIndex];
-    const show = stageKey === "READY" && showScramblePref();
-    scrambleElement.classList.toggle("removed", !show);
-}
-
+// --- Scramble Logic ---
 function generateScramble(length = 20) {
-    const sides = ["U", "R", "F", "D", "L", "B"];
-    const moves = ["", "2", "'"];
-    const opposites = { U: "D", D: "U", R: "L", L: "R", F: "B", B: "F" };
     const scramble = [];
     let lastSide = null;
 
     for (let i = 0; i < length; i++) {
-        const availableSides = sides.filter(side => side !== lastSide && side !== opposites[lastSide]);
+        const availableSides = SCRAMBLE_SIDES.filter(
+            (side) => side !== lastSide && side !== SCRAMBLE_OPPOSITES[lastSide]
+        );
         const side = availableSides[Math.floor(Math.random() * availableSides.length)];
-        const move = moves[Math.floor(Math.random() * moves.length)];
+        const move = SCRAMBLE_MOVES[Math.floor(Math.random() * SCRAMBLE_MOVES.length)];
         scramble.push(side + move);
         lastSide = side;
     }
@@ -158,21 +73,42 @@ function generateScramble(length = 20) {
 }
 
 export function refreshScramble() {
-    if (!scrambleElement) return;
+    if (!scrambleEl) return;
     const customLength = parseInt(localStorage.getItem("scrambleLength"), 10) || 20;
-    scrambleElement.textContent = generateScramble(customLength);
+    scrambleEl.textContent = generateScramble(customLength);
+}
+
+export function updateScrambleVisibility() {
+    if (!scrambleEl) return;
+    const isReady = STAGE_ORDER[currentStageIndex] === "READY";
+    scrambleEl.classList.toggle("removed", !(isReady && showScramblePref()));
+}
+
+// --- Timer & Stage Logic ---
+function clearAllTimers() {
+    clearInterval(inspectionInterval);
+    cancelAnimationFrame(timingInterval);
+    clearTimeout(inspectionHoldTimeout);
+    inspectionInterval = null;
+    timingInterval = null;
+    inspectionHoldTimeout = null;
+}
+
+function applyBackgroundColor() {
+    const stage = STAGES[STAGE_ORDER[currentStageIndex]];
+    timerSection.style.backgroundColor = isPressed ? stage.bright : stage.normal;
 }
 
 function updateStageUI() {
     const stageKey = STAGE_ORDER[currentStageIndex];
-    applyCurrentBackgroundColor();
-    updateNavVisibility();
+    applyBackgroundColor();
+    navEl.classList.toggle("removed", stageKey === "INSPECTION" || stageKey === "TIMING");
     updateScrambleVisibility();
 
     if (stageKey === "READY") {
         refreshScramble();
     } else if (stageKey === "INSPECTION") {
-        timerTextElement.textContent = inspectionTimeLeft;
+        timerTextEl.textContent = inspectionTimeLeft;
     }
 }
 
@@ -185,10 +121,11 @@ function advanceStage() {
         inspectionTimeLeft = 15;
         inspectionReadyToStart = false;
         updateStageUI();
+
         inspectionInterval = setInterval(() => {
             if (inspectionTimeLeft > 0) {
                 inspectionTimeLeft--;
-                timerTextElement.textContent = inspectionTimeLeft;
+                timerTextEl.textContent = inspectionTimeLeft;
             }
             if (inspectionTimeLeft <= 0) {
                 clearInterval(inspectionInterval);
@@ -200,13 +137,12 @@ function advanceStage() {
         timingStartTime = performance.now();
 
         if (!showTimeWhileSolving()) {
-            timerTextElement.textContent = "Solving...";
+            timerTextEl.textContent = "Solving...";
         }
 
         const updateTimer = () => {
-            const elapsedMs = performance.now() - timingStartTime;
             if (showTimeWhileSolving()) {
-                timerTextElement.textContent = formatElapsedTime(elapsedMs);
+                timerTextEl.textContent = formatMs(performance.now() - timingStartTime);
             }
             timingInterval = requestAnimationFrame(updateTimer);
         };
@@ -216,32 +152,23 @@ function advanceStage() {
     }
 }
 
+// --- Input Handlers ---
 function handlePressDown() {
-    if (timerBackgroundElement.classList.contains("removed")) return;
-
+    if (timerSection.classList.contains("removed")) return;
     const stageKey = STAGE_ORDER[currentStageIndex];
 
     if (stageKey === "TIMING") {
         const elapsedMs = performance.now() - timingStartTime;
-        if (timingInterval) {
-            cancelAnimationFrame(timingInterval);
-            timingInterval = null;
-        }
-        timerTextElement.textContent = formatElapsedTime(elapsedMs);
+        clearAllTimers();
+        timerTextEl.textContent = formatMs(elapsedMs);
 
         const minutes = Math.floor(elapsedMs / 60_000);
         const seconds = Math.floor((elapsedMs % 60_000) / 1000);
         const ms = Math.floor(elapsedMs % 1000);
 
-        const currentCategory = "3x3";
-        const newTime = new Time(ms, seconds, minutes, currentCategory);
-
-        let savedTimes = JSON.parse(localStorage.getItem("solveTimes") || "[]");
-        savedTimes.push(newTime);
-
-        savedTimes = recalculateRanks(savedTimes);
-
-        localStorage.setItem("solveTimes", JSON.stringify(savedTimes));
+        const savedTimes = getSavedTimes();
+        savedTimes.push(new Time(ms, seconds, minutes, "3x3"));
+        saveTimes(savedTimes);
 
         currentStageIndex = 0;
         isPressed = false;
@@ -254,34 +181,30 @@ function handlePressDown() {
 
     if (stageKey === "INSPECTION") {
         inspectionReadyToStart = false;
-        applyCurrentBackgroundColor();
+        applyBackgroundColor();
         inspectionHoldTimeout = setTimeout(() => {
             inspectionReadyToStart = true;
-            timerBackgroundElement.style.backgroundColor = STAGES.TIMING.bright;
+            timerSection.style.backgroundColor = STAGES.TIMING.bright;
         }, HOLD_DELAY);
     } else {
-        applyCurrentBackgroundColor();
+        applyBackgroundColor();
     }
 }
 
 function handlePressUp() {
-    if (timerBackgroundElement.classList.contains("removed")) return;
-
+    if (timerSection.classList.contains("removed")) return;
     const stageKey = STAGE_ORDER[currentStageIndex];
     if (!isPressed && stageKey !== "TIMING") return;
 
     if (stageKey === "INSPECTION") {
-        if (inspectionHoldTimeout) {
-            clearTimeout(inspectionHoldTimeout);
-            inspectionHoldTimeout = null;
-        }
+        clearTimeout(inspectionHoldTimeout);
+        inspectionHoldTimeout = null;
+        isPressed = false;
 
         if (inspectionReadyToStart) {
-            isPressed = false;
             advanceStage();
         } else {
-            isPressed = false;
-            applyCurrentBackgroundColor();
+            applyBackgroundColor();
         }
         return;
     }
@@ -290,32 +213,41 @@ function handlePressUp() {
     advanceStage();
 }
 
-document.addEventListener("keydown", (event) => {
-    if (event.code === "Space" && !event.repeat) {
-        event.preventDefault();
+// --- Event Listeners ---
+fullscreenBtn.addEventListener("click", () => {
+    if (!document.documentElement.requestFullscreen) return;
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => { });
+    } else {
+        document.exitFullscreen?.();
+    }
+});
+
+settingsBtn.addEventListener("click", () => showSection("settings"));
+
+document.addEventListener("keydown", (e) => {
+    if (e.code === "Space" && !e.repeat) {
+        e.preventDefault();
         handlePressDown();
     }
 });
 
-document.addEventListener("keyup", (event) => {
-    if (event.code === "Space") {
-        event.preventDefault();
+document.addEventListener("keyup", (e) => {
+    if (e.code === "Space") {
+        e.preventDefault();
         handlePressUp();
     }
 });
 
-document.addEventListener("touchstart", (event) => {
-    if (event.target.closest("nav")) return;
-    handlePressDown();
+document.addEventListener("touchstart", (e) => {
+    if (!e.target.closest("nav")) handlePressDown();
 }, { passive: true });
 
-document.addEventListener("touchend", (event) => {
-    if (event.target.closest("nav") && !isPressed) return;
-    handlePressUp();
+document.addEventListener("touchend", (e) => {
+    if (!e.target.closest("nav") || isPressed) handlePressUp();
 }, { passive: true });
 
-document.addEventListener("touchcancel", () => {
-    handlePressUp();
-}, { passive: true });
+document.addEventListener("touchcancel", handlePressUp, { passive: true });
 
+// --- Init ---
 updateStageUI();

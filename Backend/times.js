@@ -1,35 +1,32 @@
-import { recalculateRanks } from "./timer.js";
-import { formatSolveTime, formatDate, getOrdinalSuffix } from "./formatters.js";
+import { formatDate, formatMs, getOrdinalSuffix, getSolveTotalMs } from "./formatters.js";
+import { getSavedTimes, recalculateRanks, showSection } from "./storage.js";
 
-const timesBackBtn = document.getElementById("timesBackBtn");
-const timesSection = document.getElementById("times");
-const timerBackgroundElement = document.getElementById("timer");
+// --- DOM Elements ---
+const timesCard = document.querySelector("#times .card");
 const timesBtn = document.getElementById("timesBtn");
+const timesBackBtn = document.getElementById("timesBackBtn");
 
+// --- Render ---
 export function renderTimes() {
-    const timesCard = timesSection.querySelector(".card");
     if (!timesCard) return;
 
-    let savedTimes = JSON.parse(localStorage.getItem("solveTimes") || "[]");
+    const savedTimes = recalculateRanks(getSavedTimes());
 
     if (savedTimes.length === 0) {
         timesCard.innerHTML = `<p style="padding: 24px; color: #808080; text-align: center;">No solves yet</p>`;
         return;
     }
 
-    savedTimes = recalculateRanks(savedTimes);
-
     timesCard.innerHTML = "";
 
     [...savedTimes].reverse().forEach((solve) => {
-        const timeStr = formatSolveTime(solve);
+        const timeStr = formatMs(getSolveTotalMs(solve));
         const dateStr = formatDate(solve.datetime);
         const numberStr = solve.ordinalRank ? getOrdinalSuffix(solve.ordinalRank) : "";
         const modificationStr = solve.modification || "";
 
         const itemDiv = document.createElement("div");
         itemDiv.className = "timelistItem";
-
         itemDiv.innerHTML = `
             <p class="timelistTime">${timeStr}</p>
             <p class="timelistDate">${dateStr}</p>
@@ -48,13 +45,10 @@ export function renderTimes() {
     });
 }
 
-timesBtn.addEventListener("click", () => {
+// --- Event Listeners ---
+timesBtn?.addEventListener("click", () => {
     renderTimes();
-    timesSection.classList.remove("removed");
-    timerBackgroundElement.classList.add("removed");
+    showSection("times");
 });
 
-timesBackBtn.addEventListener("click", () => {
-    timerBackgroundElement.classList.remove("removed");
-    timesSection.classList.add("removed");
-});
+timesBackBtn?.addEventListener("click", () => showSection("timer"));
