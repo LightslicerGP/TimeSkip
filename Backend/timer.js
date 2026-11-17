@@ -1,4 +1,7 @@
-class Time {
+const DECIMAL_PLACES = 3;
+const HOLD_DELAY = 500;
+
+export class Time {
     constructor(ms = 0, seconds = 0, minutes = 0, category = "") {
         this.ms = Number(ms) || 0;
         this.seconds = Number(seconds) || 0;
@@ -12,20 +15,25 @@ class Time {
     }
 
     toString() {
-        const total = Math.max(0, Math.floor(this.totalMs));
-        const minutes = Math.floor(total / 60_000);
-        const seconds = Math.floor((total % 60_000) / 1000);
-        const divisor = Math.pow(10, 3 - decimalPlaces);
-        const subMs = Math.floor((total % 1000) / divisor);
-        const paddedSubMs = String(subMs).padStart(decimalPlaces, "0");
-        const paddedSeconds = String(seconds).padStart(2, "0");
-
-        if (minutes > 0) {
-            return `${minutes}:${paddedSeconds}.${paddedSubMs}`;
-        }
-
-        return `${seconds}.${paddedSubMs}`;
+        return formatElapsedTime(this.totalMs);
     }
+}
+
+function formatElapsedTime(elapsedMs) {
+    const total = Math.max(0, Math.floor(elapsedMs));
+    const minutes = Math.floor(total / 60_000);
+    const seconds = Math.floor((total % 60_000) / 1000);
+    const divisor = Math.pow(10, 3 - DECIMAL_PLACES);
+    const subMs = Math.floor((total % 1000) / divisor);
+
+    const paddedSubMs = String(subMs).padStart(DECIMAL_PLACES, "0");
+    const paddedSeconds = String(seconds).padStart(2, "0");
+
+    if (minutes > 0) {
+        return `${minutes}:${paddedSeconds}.${paddedSubMs}`;
+    }
+
+    return `${seconds}.${paddedSubMs}`;
 }
 
 const STAGES = {
@@ -35,19 +43,15 @@ const STAGES = {
 };
 
 const STAGE_ORDER = ["READY", "INSPECTION", "TIMING"];
-const decimalPlaces = 3;
-const holdDelay = 500;
 const showTimeWhileSolving = () => localStorage.getItem("showTimeWhileSolving") === "true";
 const showScramblePref = () => localStorage.getItem("showScramble") === "true";
 
 let currentStageIndex = 0;
 let isPressed = false;
-
 let inspectionInterval = null;
 let inspectionTimeLeft = 15;
 let timingInterval = null;
 let timingStartTime = 0;
-
 let inspectionHoldTimeout = null;
 let inspectionReadyToStart = false;
 
@@ -62,16 +66,14 @@ const timesBtn = document.getElementById("timesBtn");
 const timesSection = document.getElementById("times");
 
 fullscreenBtn.addEventListener("click", () => {
-    if (document.documentElement.requestFullscreen) {
-        if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().catch(() => { });
-        } else {
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            }
-        }
-    } else {
-        console.warn("Fullscreen API is not supported on this iOS browser. Use 'Add to Home Screen' to run as a full-screen PWA.");
+    if (!document.documentElement.requestFullscreen) {
+        console.warn("Fullscreen API is not supported on this browser.");
+        return;
+    }
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => { });
+    } else if (document.exitFullscreen) {
+        document.exitFullscreen();
     }
 });
 
@@ -108,47 +110,29 @@ function applyCurrentBackgroundColor() {
 
 function updateNavVisibility() {
     const stageKey = STAGE_ORDER[currentStageIndex];
-    if (stageKey === "INSPECTION" || stageKey === "TIMING") {
-        navElement.classList.add("removed");
-    } else {
-        navElement.classList.remove("removed");
-    }
+    navElement.classList.toggle("removed", stageKey === "INSPECTION" || stageKey === "TIMING");
 }
 
 export function updateScrambleVisibility() {
     if (!scrambleElement) return;
     const stageKey = STAGE_ORDER[currentStageIndex];
-
-    if (stageKey === "READY" && showScramblePref()) {
-        scrambleElement.classList.remove("removed");
-    } else {
-        scrambleElement.classList.add("removed");
-    }
+    const show = stageKey === "READY" && showScramblePref();
+    scrambleElement.classList.toggle("removed", !show);
 }
 
 function generateScramble(length = 20) {
     const sides = ["U", "R", "F", "D", "L", "B"];
     const moves = ["", "2", "'"];
-    const opposites = {
-        "U": "D", "D": "U",
-        "R": "L", "L": "R",
-        "F": "B", "B": "F"
-    };
+    const opposites = { U: "D", D: "U", R: "L", L: "R", F: "B", B: "F" };
     const scramble = [];
     let lastSide = null;
 
     for (let i = 0; i < length; i++) {
-        const availableSides = sides.filter(side =>
-            side !== lastSide && side !== opposites[lastSide]
-        );
-
+        const availableSides = sides.filter(side => side !== lastSide && side !== opposites[lastSide]);
         const side = availableSides[Math.floor(Math.random() * availableSides.length)];
         const move = moves[Math.floor(Math.random() * moves.length)];
-
         scramble.push(side + move);
         lastSide = side;
-
-
     }
     return scramble.join(" ");
 }
@@ -166,28 +150,10 @@ function updateStageUI() {
     updateScrambleVisibility();
 
     if (stageKey === "READY") {
-        const customLength = parseInt(localStorage.getItem("scrambleLength"), 10) || 20;
-        scrambleElement.textContent = generateScramble(customLength);
+        refreshScramble();
     } else if (stageKey === "INSPECTION") {
         timerTextElement.textContent = inspectionTimeLeft;
     }
-}
-
-function formatTime(elapsedMs) {
-    const total = Math.max(0, Math.floor(elapsedMs));
-    const minutes = Math.floor(total / 60_000);
-    const seconds = Math.floor((total % 60_000) / 1000);
-    const divisor = Math.pow(10, 3 - decimalPlaces);
-    const subMs = Math.floor((total % 1000) / divisor);
-
-    const paddedSubMs = String(subMs).padStart(decimalPlaces, "0");
-    const paddedSeconds = String(seconds).padStart(2, "0");
-
-    if (minutes > 0) {
-        return `${minutes}:${paddedSeconds}.${paddedSubMs}`;
-    }
-
-    return `${seconds}.${paddedSubMs}`;
 }
 
 function advanceStage() {
@@ -220,7 +186,7 @@ function advanceStage() {
         const updateTimer = () => {
             const elapsedMs = performance.now() - timingStartTime;
             if (showTimeWhileSolving()) {
-                timerTextElement.textContent = formatTime(elapsedMs);
+                timerTextElement.textContent = formatElapsedTime(elapsedMs);
             }
             timingInterval = requestAnimationFrame(updateTimer);
         };
@@ -241,7 +207,7 @@ function handlePressDown() {
             cancelAnimationFrame(timingInterval);
             timingInterval = null;
         }
-        timerTextElement.textContent = formatTime(elapsedMs);
+        timerTextElement.textContent = formatElapsedTime(elapsedMs);
 
         const minutes = Math.floor(elapsedMs / 60_000);
         const seconds = Math.floor((elapsedMs % 60_000) / 1000);
@@ -267,7 +233,7 @@ function handlePressDown() {
         inspectionHoldTimeout = setTimeout(() => {
             inspectionReadyToStart = true;
             timerBackgroundElement.style.backgroundColor = STAGES.TIMING.bright;
-        }, holdDelay);
+        }, HOLD_DELAY);
     } else {
         applyCurrentBackgroundColor();
     }
@@ -277,7 +243,6 @@ function handlePressUp() {
     if (timerBackgroundElement.classList.contains("removed")) return;
 
     const stageKey = STAGE_ORDER[currentStageIndex];
-
     if (!isPressed && stageKey !== "TIMING") return;
 
     if (stageKey === "INSPECTION") {
@@ -301,11 +266,9 @@ function handlePressUp() {
 }
 
 document.addEventListener("keydown", (event) => {
-    if (event.code === "Space") {
+    if (event.code === "Space" && !event.repeat) {
         event.preventDefault();
-        if (!event.repeat) {
-            handlePressDown();
-        }
+        handlePressDown();
     }
 });
 
@@ -326,7 +289,7 @@ document.addEventListener("touchend", (event) => {
     handlePressUp();
 }, { passive: true });
 
-document.addEventListener("touchcancel", (event) => {
+document.addEventListener("touchcancel", () => {
     handlePressUp();
 }, { passive: true });
 

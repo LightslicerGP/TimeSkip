@@ -42,7 +42,7 @@ svg {
 
 body {
     padding-top: env(safe-area-inset-top);
-    margin-bottom: 0px;
+    margin-bottom: 0px !important;
     /* iOS notch space */
 }
 
