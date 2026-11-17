@@ -1,3 +1,5 @@
+import { recalculateRanks } from "./timer.js";
+
 const timesBackBtn = document.getElementById("timesBackBtn");
 const timesSection = document.getElementById("times");
 const timerBackgroundElement = document.getElementById("timer");
@@ -43,25 +45,26 @@ function formatSolveTime(solve) {
     return `${seconds}.${paddedSubMs}`;
 }
 
-// Renders saved solves into the card container
 export function renderTimes() {
     const timesCard = timesSection.querySelector(".card");
     if (!timesCard) return;
 
-    const savedTimes = JSON.parse(localStorage.getItem("solveTimes") || "[]");
+    let savedTimes = JSON.parse(localStorage.getItem("solveTimes") || "[]");
 
     if (savedTimes.length === 0) {
         timesCard.innerHTML = `<p style="padding: 24px; color: #808080; text-align: center;">No solves yet</p>`;
         return;
     }
 
+    savedTimes = recalculateRanks(savedTimes);
+
     timesCard.innerHTML = "";
 
     [...savedTimes].reverse().forEach((solve) => {
         const timeStr = formatSolveTime(solve);
         const dateStr = formatDate(solve.datetime);
-        const numberStr = solve.solveNumber ? getOrdinalSuffix(solve.solveNumber) : "";
-        const modificationStr = solve.modification || ""; // Optional DNF / +2 field
+        const numberStr = solve.ordinalRank ? getOrdinalSuffix(solve.ordinalRank) : "";
+        const modificationStr = solve.modification || "";
 
         const itemDiv = document.createElement("div");
         itemDiv.className = "timelistItem";
