@@ -10,10 +10,10 @@ const switchSortOrderBtn = document.getElementById("switchSortOrder");
 // --- State ---
 const SORT_MODES = ["newest-oldest", "oldest-newest", "quickest-slowest", "slowest-quickest"];
 const SORT_LABELS = {
-    "newest-oldest": "Sorted: Newest to Oldest",
-    "oldest-newest": "Sorted: Oldest to Newest",
-    "quickest-slowest": "Sorted: Quickest to Slowest",
-    "slowest-quickest": "Sorted: Slowest to Quickest"
+    "newest-oldest": "Sorted: Newest",
+    "oldest-newest": "Sorted: Oldest",
+    "quickest-slowest": "Sorted: Quickest",
+    "slowest-quickest": "Sorted: Slowest"
 };
 let currentSortIndex = 0;
 
