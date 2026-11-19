@@ -20,12 +20,11 @@ const SORT_LABELS = {
 let currentSortIndex = 0;
 let activeSolveId = null;
 
-// --- Time Adjustment Helpers ---
-function adjustSolveMs(solve, deltaMs) {
-    const updatedTotal = Math.max(0, getSolveTotalMs(solve) + deltaMs);
-    solve.minutes = Math.floor(updatedTotal / 60_000);
-    solve.seconds = Math.floor((updatedTotal % 60_000) / 1000);
-    solve.ms = Math.floor(updatedTotal % 1000);
+// --- Display Time Helper ---
+function getDisplayTotalMs(solve) {
+    const baseMs = getSolveTotalMs(solve);
+    const isPlusTwo = String(solve.modification || "").toUpperCase() === "+2";
+    return isPlusTwo ? baseMs + 2000 : baseMs;
 }
 
 function normalizeSolvesWithIds(times) {
@@ -55,25 +54,9 @@ function toggleModification(solveId, targetMod) {
     const currentMod = String(solve.modification || "").toUpperCase();
 
     if (targetMod === "+2") {
-        if (currentMod === "+2") {
-            solve.modification = "";
-            adjustSolveMs(solve, -2000);
-        } else {
-            if (currentMod === "DNF") {
-                // Switching from DNF to +2
-            }
-            solve.modification = "+2";
-            adjustSolveMs(solve, 2000);
-        }
+        solve.modification = currentMod === "+2" ? "" : "+2";
     } else if (targetMod === "DNF") {
-        if (currentMod === "DNF") {
-            solve.modification = "";
-        } else {
-            if (currentMod === "+2") {
-                adjustSolveMs(solve, -2000);
-            }
-            solve.modification = "DNF";
-        }
+        solve.modification = currentMod === "DNF" ? "" : "DNF";
     }
 
     saveTimes(times);
@@ -220,8 +203,8 @@ export function renderTimes() {
 
     const mode = SORT_MODES[currentSortIndex];
     savedTimes.sort((a, b) => {
-        const timeA = getSolveTotalMs(a);
-        const timeB = getSolveTotalMs(b);
+        const timeA = getDisplayTotalMs(a);
+        const timeB = getDisplayTotalMs(b);
         const dateA = new Date(a.datetime).getTime();
         const dateB = new Date(b.datetime).getTime();
 
@@ -235,7 +218,7 @@ export function renderTimes() {
     timesCard.innerHTML = "";
 
     savedTimes.forEach((solve) => {
-        const timeStr = formatMs(getSolveTotalMs(solve));
+        const timeStr = formatMs(getDisplayTotalMs(solve));
         const dateStr = formatDate(solve.datetime);
         const numberStr = solve.ordinalRank ? getOrdinalSuffix(solve.ordinalRank) : "";
         const modificationStr = solve.modification || "";
