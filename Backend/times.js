@@ -1,11 +1,13 @@
 import { formatDate, formatMs, getOrdinalSuffix, getSolveTotalMs } from "./formatters.js";
-import { getSavedTimes, recalculateRanks, showSection } from "./storage.js";
+import { getSavedTimes, recalculateRanks, saveTimes, showSection } from "./storage.js";
 
 // --- DOM Elements ---
 const timesCard = document.querySelector("#times .card");
 const timesBtn = document.getElementById("timesBtn");
 const timesBackBtn = document.getElementById("timesBackBtn");
 const switchSortOrderBtn = document.getElementById("switchSortOrder");
+const exportTimesBtn = document.getElementById("exportTimes");
+const importTimesBtn = document.getElementById("importTimes");
 
 // --- State ---
 const SORT_MODES = ["newest-oldest", "oldest-newest", "quickest-slowest", "slowest-quickest"];
@@ -18,7 +20,7 @@ const SORT_LABELS = {
 let currentSortIndex = 0;
 
 // --- Popup Notification Helper ---
-function showSortPopup(message) {
+function showPopup(message) {
     let popup = document.querySelector(".sort-popup");
     if (!popup) {
         popup = document.createElement("div");
@@ -33,6 +35,67 @@ function showSortPopup(message) {
     popup._hideTimeout = setTimeout(() => {
         popup.classList.remove("visible");
     }, 2000);
+}
+
+// --- Export / Import Helpers ---
+function exportTimesToJson() {
+    const times = recalculateRanks(getSavedTimes());
+    const blob = new Blob([JSON.stringify(times, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    const dateStamp = new Date().toISOString().slice(0, 10);
+    link.href = url;
+    link.download = `TimeSkip-times-export-${dateStamp}.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    URL.revokeObjectURL(url);
+    showPopup("Exported JSON");
+}
+
+function importTimesFromJson() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "application/json,.json";
+
+    input.addEventListener("change", async (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        try {
+            const text = await file.text();
+            const parsed = JSON.parse(text);
+
+            if (!Array.isArray(parsed)) {
+                showPopup("Invalid JSON format");
+                return;
+            }
+
+            const validSolves = parsed
+                .filter((item) => item && typeof item === "object")
+                .map((item) => ({
+                    ms: Number(item.ms) || 0,
+                    seconds: Number(item.seconds) || 0,
+                    minutes: Number(item.minutes) || 0,
+                    category: String(item.category || "3x3"),
+                    datetime: item.datetime || new Date().toISOString(),
+                    modification: item.modification || "",
+                    ordinalRank: 0
+                }));
+
+            const existingTimes = getSavedTimes();
+            const mergedTimes = [...existingTimes, ...validSolves];
+            saveTimes(mergedTimes);
+            renderTimes();
+            showPopup(`Imported ${validSolves.length} time${validSolves.length === 1 ? "" : "s"}`);
+        } catch {
+            showPopup("Failed to import JSON");
+        }
+    });
+
+    input.click();
 }
 
 // --- Render ---
@@ -99,5 +162,8 @@ timesBackBtn?.addEventListener("click", () => showSection("timer"));
 switchSortOrderBtn?.addEventListener("click", () => {
     currentSortIndex = (currentSortIndex + 1) % SORT_MODES.length;
     renderTimes();
-    showSortPopup(SORT_LABELS[SORT_MODES[currentSortIndex]]);
+    showPopup(SORT_LABELS[SORT_MODES[currentSortIndex]]);
 });
+
+exportTimesBtn?.addEventListener("click", exportTimesToJson);
+importTimesBtn?.addEventListener("click", importTimesFromJson);
