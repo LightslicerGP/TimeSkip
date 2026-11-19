@@ -18,6 +18,67 @@ const SORT_LABELS = {
     "slowest-quickest": "Sorted: Slowest"
 };
 let currentSortIndex = 0;
+let activeSolveId = null;
+
+// --- Time Adjustment Helpers ---
+function adjustSolveMs(solve, deltaMs) {
+    const updatedTotal = Math.max(0, getSolveTotalMs(solve) + deltaMs);
+    solve.minutes = Math.floor(updatedTotal / 60_000);
+    solve.seconds = Math.floor((updatedTotal % 60_000) / 1000);
+    solve.ms = Math.floor(updatedTotal % 1000);
+}
+
+function normalizeSolvesWithIds(times) {
+    let changed = false;
+    const normalized = times.map((solve, idx) => {
+        if (!solve.id) {
+            changed = true;
+            return {
+                ...solve,
+                id: `${solve.datetime || "solve"}-${idx}-${Math.random().toString(36).slice(2, 7)}`
+            };
+        }
+        return solve;
+    });
+
+    if (changed) {
+        saveTimes(normalized);
+    }
+    return normalized;
+}
+
+function toggleModification(solveId, targetMod) {
+    const times = normalizeSolvesWithIds(getSavedTimes());
+    const solve = times.find((item) => item.id === solveId);
+    if (!solve) return;
+
+    const currentMod = String(solve.modification || "").toUpperCase();
+
+    if (targetMod === "+2") {
+        if (currentMod === "+2") {
+            solve.modification = "";
+            adjustSolveMs(solve, -2000);
+        } else {
+            if (currentMod === "DNF") {
+                // Switching from DNF to +2
+            }
+            solve.modification = "+2";
+            adjustSolveMs(solve, 2000);
+        }
+    } else if (targetMod === "DNF") {
+        if (currentMod === "DNF") {
+            solve.modification = "";
+        } else {
+            if (currentMod === "+2") {
+                adjustSolveMs(solve, -2000);
+            }
+            solve.modification = "DNF";
+        }
+    }
+
+    saveTimes(times);
+    renderTimes();
+}
 
 // --- Popup Notification Helper ---
 function showPopup(message) {
@@ -44,23 +105,37 @@ function getOrCreateOptionsPopup() {
         popup = document.createElement("div");
         popup.className = "item-options-popup glassy";
         popup.innerHTML = `
-            <button type="button" class="item-option-btn">+2</button>
-            <button type="button" class="item-option-btn">DNF</button>
-            <button type="button" class="item-option-btn">Delete</button>
+            <button type="button" class="item-option-btn" data-action="+2">+2</button>
+            <button type="button" class="item-option-btn" data-action="DNF">DNF</button>
+            <button type="button" class="item-option-btn" data-action="delete">Delete</button>
         `;
+
+        popup.addEventListener("click", (event) => {
+            const btn = event.target.closest(".item-option-btn");
+            if (!btn || !activeSolveId) return;
+
+            const action = btn.dataset.action;
+            if (action === "+2" || action === "DNF") {
+                toggleModification(activeSolveId, action);
+                hideOptionsPopup();
+            }
+        });
+
         document.body.appendChild(popup);
     }
     return popup;
 }
 
 function hideOptionsPopup() {
+    activeSolveId = null;
     const popup = document.querySelector(".item-options-popup");
     if (popup) {
         popup.classList.remove("open");
     }
 }
 
-function openOptionsPopup(svgElement) {
+function openOptionsPopup(svgElement, solveId) {
+    activeSolveId = solveId;
     const popup = getOrCreateOptionsPopup();
     const rect = svgElement.getBoundingClientRect();
 
@@ -73,7 +148,7 @@ function openOptionsPopup(svgElement) {
 
 // --- Export / Import Helpers ---
 function exportTimesToJson() {
-    const times = recalculateRanks(getSavedTimes());
+    const times = recalculateRanks(normalizeSolvesWithIds(getSavedTimes()));
     const blob = new Blob([JSON.stringify(times, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
 
@@ -109,7 +184,8 @@ function importTimesFromJson() {
 
             const validSolves = parsed
                 .filter((item) => item && typeof item === "object")
-                .map((item) => ({
+                .map((item, idx) => ({
+                    id: item.id || `${item.datetime || new Date().toISOString()}-${idx}-${Math.random().toString(36).slice(2, 7)}`,
                     ms: Number(item.ms) || 0,
                     seconds: Number(item.seconds) || 0,
                     minutes: Number(item.minutes) || 0,
@@ -135,7 +211,7 @@ export function renderTimes() {
     if (!timesCard) return;
 
     hideOptionsPopup();
-    let savedTimes = recalculateRanks(getSavedTimes());
+    let savedTimes = recalculateRanks(normalizeSolvesWithIds(getSavedTimes()));
 
     if (savedTimes.length === 0) {
         timesCard.innerHTML = `<p style="padding: 24px; color: #808080; text-align: center;">No solves yet</p>`;
@@ -183,7 +259,7 @@ export function renderTimes() {
         const optionsSvg = itemDiv.querySelector(".timelistOptions");
         optionsSvg?.addEventListener("click", (event) => {
             event.stopPropagation();
-            openOptionsPopup(optionsSvg);
+            openOptionsPopup(optionsSvg, solve.id);
         });
 
         timesCard.appendChild(itemDiv);
