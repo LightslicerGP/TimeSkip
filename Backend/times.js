@@ -37,6 +37,40 @@ function showPopup(message) {
     }, 2000);
 }
 
+// --- Item Options Popup Helper ---
+function getOrCreateOptionsPopup() {
+    let popup = document.querySelector(".item-options-popup");
+    if (!popup) {
+        popup = document.createElement("div");
+        popup.className = "item-options-popup glassy";
+        popup.innerHTML = `
+            <button type="button" class="item-option-btn">+2</button>
+            <button type="button" class="item-option-btn">DNF</button>
+            <button type="button" class="item-option-btn">Delete</button>
+        `;
+        document.body.appendChild(popup);
+    }
+    return popup;
+}
+
+function hideOptionsPopup() {
+    const popup = document.querySelector(".item-options-popup");
+    if (popup) {
+        popup.classList.remove("open");
+    }
+}
+
+function openOptionsPopup(svgElement) {
+    const popup = getOrCreateOptionsPopup();
+    const rect = svgElement.getBoundingClientRect();
+
+    // Align top-right of popup with top-right of SVG; expands leftward and downward
+    popup.style.top = `${rect.top}px`;
+    popup.style.right = `${window.innerWidth - rect.right}px`;
+    popup.style.left = "auto";
+    popup.classList.add("open");
+}
+
 // --- Export / Import Helpers ---
 function exportTimesToJson() {
     const times = recalculateRanks(getSavedTimes());
@@ -100,6 +134,7 @@ function importTimesFromJson() {
 export function renderTimes() {
     if (!timesCard) return;
 
+    hideOptionsPopup();
     let savedTimes = recalculateRanks(getSavedTimes());
 
     if (savedTimes.length === 0) {
@@ -145,6 +180,12 @@ export function renderTimes() {
             </svg>
         `;
 
+        const optionsSvg = itemDiv.querySelector(".timelistOptions");
+        optionsSvg?.addEventListener("click", (event) => {
+            event.stopPropagation();
+            openOptionsPopup(optionsSvg);
+        });
+
         timesCard.appendChild(itemDiv);
     });
 }
@@ -155,7 +196,10 @@ timesBtn?.addEventListener("click", () => {
     showSection("times");
 });
 
-timesBackBtn?.addEventListener("click", () => showSection("timer"));
+timesBackBtn?.addEventListener("click", () => {
+    hideOptionsPopup();
+    showSection("timer");
+});
 
 switchSortOrderBtn?.addEventListener("click", () => {
     currentSortIndex = (currentSortIndex + 1) % SORT_MODES.length;
@@ -165,3 +209,9 @@ switchSortOrderBtn?.addEventListener("click", () => {
 
 exportTimesBtn?.addEventListener("click", exportTimesToJson);
 importTimesBtn?.addEventListener("click", importTimesFromJson);
+
+document.addEventListener("click", (event) => {
+    if (!event.target.closest(".item-options-popup") && !event.target.closest(".timelistOptions")) {
+        hideOptionsPopup();
+    }
+});
