@@ -19,6 +19,7 @@ const SORT_LABELS = {
 };
 let currentSortIndex = 0;
 let activeSolveId = null;
+let pendingDeleteSolveId = null;
 
 // --- Display Time Helper ---
 function getDisplayTotalMs(solve) {
@@ -63,6 +64,14 @@ function toggleModification(solveId, targetMod) {
     renderTimes();
 }
 
+function deleteSolveById(solveId) {
+    const times = normalizeSolvesWithIds(getSavedTimes());
+    const filtered = times.filter((item) => item.id !== solveId);
+    saveTimes(filtered);
+    renderTimes();
+    showPopup("Deleted time");
+}
+
 // --- Popup Notification Helper ---
 function showPopup(message) {
     let popup = document.querySelector(".sort-popup");
@@ -79,6 +88,59 @@ function showPopup(message) {
     popup._hideTimeout = setTimeout(() => {
         popup.classList.remove("visible");
     }, 2000);
+}
+
+// --- Delete Confirmation Modal Helper ---
+function getOrCreateDeleteConfirmPopup() {
+    let modal = document.querySelector(".delete-confirm-popup");
+    if (!modal) {
+        modal = document.createElement("div");
+        modal.className = "delete-confirm-popup glassy";
+        modal.style.top = "50%";
+        modal.style.left = "50%";
+        modal.style.transform = "translate(-50%, -50%)";
+        modal.innerHTML = `
+            <p class="delete-confirm-text"></p>
+            <div class="delete-confirm-actions">
+                <button type="button" class="delete-confirm-cancel">cancel</button>
+                <button type="button" class="delete-confirm-delete">delete</button>
+            </div>
+        `;
+
+        modal.querySelector(".delete-confirm-cancel")?.addEventListener("click", () => {
+            hideDeleteConfirmPopup();
+        });
+
+        modal.querySelector(".delete-confirm-delete")?.addEventListener("click", () => {
+            if (pendingDeleteSolveId) {
+                const idToDelete = pendingDeleteSolveId;
+                hideDeleteConfirmPopup();
+                deleteSolveById(idToDelete);
+            }
+        });
+
+        document.body.appendChild(modal);
+    }
+    return modal;
+}
+
+function hideDeleteConfirmPopup() {
+    pendingDeleteSolveId = null;
+    const modal = document.querySelector(".delete-confirm-popup");
+    if (modal) {
+        modal.classList.remove("open");
+    }
+}
+
+function openDeleteConfirmPopup(solve) {
+    pendingDeleteSolveId = solve.id;
+    const modal = getOrCreateDeleteConfirmPopup();
+    const formattedTime = formatMs(getDisplayTotalMs(solve));
+    const textEl = modal.querySelector(".delete-confirm-text");
+    if (textEl) {
+        textEl.textContent = `are you sure you want to delete time ${formattedTime}?`;
+    }
+    modal.classList.add("open");
 }
 
 // --- Item Options Popup Helper ---
@@ -101,6 +163,13 @@ function getOrCreateOptionsPopup() {
             if (action === "+2" || action === "DNF") {
                 toggleModification(activeSolveId, action);
                 hideOptionsPopup();
+            } else if (action === "delete") {
+                const times = normalizeSolvesWithIds(getSavedTimes());
+                const solve = times.find((item) => item.id === activeSolveId);
+                hideOptionsPopup();
+                if (solve) {
+                    openDeleteConfirmPopup(solve);
+                }
             }
         });
 
@@ -257,6 +326,7 @@ timesBtn?.addEventListener("click", () => {
 
 timesBackBtn?.addEventListener("click", () => {
     hideOptionsPopup();
+    hideDeleteConfirmPopup();
     showSection("timer");
 });
 

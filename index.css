@@ -245,6 +245,54 @@ nav>#BL {
     cursor: pointer;
 }
 
+.delete-confirm-popup {
+    display: none;
+    position: fixed;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    padding: 16px;
+    border-radius: 24px;
+    z-index: 1200;
+    max-width: calc(100vw - 48px);
+    transition: none;
+}
+
+.delete-confirm-popup.open {
+    display: flex;
+}
+
+.delete-confirm-text {
+    text-align: left;
+    color: inherit;
+    padding: 0px 4px;
+}
+
+.delete-confirm-actions {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.delete-confirm-cancel,
+.delete-confirm-delete {
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.delete-confirm-cancel {
+    background: transparent;
+    color: inherit;
+}
+
+.delete-confirm-delete {
+    background-color: #ff3b30;
+    color: #ffffff;
+}
+
 @media (prefers-color-scheme: dark) {
     svg {
         stroke: #ffffff;
