@@ -270,27 +270,26 @@ nav>#BL {
 
 .delete-confirm-actions {
     display: flex;
-    flex-direction: row;
-    justify-content: flex-end;
     gap: 8px;
 }
 
 .delete-confirm-cancel,
 .delete-confirm-delete {
-    padding: 8px 16px;
-    border-radius: 12px;
-    font-size: 14px;
+    flex: 1;
+    height: 32px;
+    border-radius: 24px;
+    text-align: center;
     cursor: pointer;
 }
 
 .delete-confirm-cancel {
-    background: transparent;
-    color: inherit;
+    background-color: rgba(0, 0, 0, 0.25);
+    color: #ffffff;
 }
 
 .delete-confirm-delete {
-    background-color: #ff3b30;
-    color: #ffffff;
+    background-color: rgba(255, 0, 0, 0.25);
+    color: #ff0000;
 }
 
 @media (prefers-color-scheme: dark) {

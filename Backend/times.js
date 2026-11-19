@@ -138,7 +138,7 @@ function openDeleteConfirmPopup(solve) {
     const formattedTime = formatMs(getDisplayTotalMs(solve));
     const textEl = modal.querySelector(".delete-confirm-text");
     if (textEl) {
-        textEl.textContent = `are you sure you want to delete time ${formattedTime}?`;
+        textEl.textContent = `Are you sure you want to delete time ${formattedTime}?`;
     }
     modal.classList.add("open");
 }
