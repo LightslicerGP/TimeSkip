@@ -85,9 +85,7 @@ function importTimesFromJson() {
                     ordinalRank: 0
                 }));
 
-            const existingTimes = getSavedTimes();
-            const mergedTimes = [...existingTimes, ...validSolves];
-            saveTimes(mergedTimes);
+            saveTimes(validSolves);
             renderTimes();
             showPopup(`Imported ${validSolves.length} time${validSolves.length === 1 ? "" : "s"}`);
         } catch {
