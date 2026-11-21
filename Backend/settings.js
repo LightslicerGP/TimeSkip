@@ -2,7 +2,7 @@ import { refreshScramble, updateScrambleVisibility } from "./timer.js";
 import { showSection } from "./storage.js";
 
 // --- DOM Elements ---
-const backBtn = document.getElementById("backBtn");
+const settingsBackBtn = document.getElementById("settingsBackBtn");
 const showTimeSwitch = document.getElementById("showTimeDuringSolveSwitch");
 const showScrambleSwitch = document.getElementById("showScramble");
 const scrambleSlider = document.querySelector("#scrambleLength input[type='range']");
@@ -31,7 +31,7 @@ scrambleSlider.addEventListener("input", (e) => {
     localStorage.setItem("scrambleLength", val);
 });
 
-backBtn.addEventListener("click", () => {
+settingsBackBtn.addEventListener("click", () => {
     showSection("timer");
     updateScrambleVisibility();
     refreshScramble();

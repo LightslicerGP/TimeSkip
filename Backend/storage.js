@@ -1,6 +1,6 @@
 import { getSolveTotalMs } from "./formatters.js";
 
-const SECTIONS = ["timer", "times", "leaderboard", "settings"];
+const SECTIONS = ["timer", "times", "leaderboard", "graph", "settings"];
 
 export function showSection(targetId) {
     SECTIONS.forEach((id) => {

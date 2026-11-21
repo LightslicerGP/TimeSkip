@@ -13,6 +13,10 @@
     src: url("Fonts/SFMono-Bold.otf");
 }
 
+:root {
+    --MNMLUI-ACCENT: #ff40ff !important;
+}
+
 * {
     margin: 0;
     border: 0;
@@ -24,7 +28,6 @@
 svg {
     width: 32px;
     height: 32px;
-    stroke: #000000;
 }
 
 .button {
@@ -43,7 +46,7 @@ svg {
 body {
     padding-top: env(safe-area-inset-top);
     /* iOS notch space */
-    /* margin-bottom: 0px !important; */
+    /* margin-bottom: 96px !important; */
     overflow-x: hidden;
 }
 
@@ -90,6 +93,10 @@ nav>#BL {
     position: fixed;
     bottom: 32px;
     left: 32px;
+}
+
+.card {
+    margin-bottom: 0px !important;
 }
 
 #time {
@@ -293,10 +300,6 @@ nav>#BL {
 }
 
 @media (prefers-color-scheme: dark) {
-    svg {
-        stroke: #ffffff;
-    }
-
     .timelistItem::after {
         background-color: #0D0D0D;
     }

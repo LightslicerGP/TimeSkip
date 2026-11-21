@@ -1,10 +1,8 @@
 import { formatDate, formatMs, getOrdinalSuffix, getSolveTotalMs } from "./formatters.js";
-import { getSavedTimes, recalculateRanks, saveTimes, showSection } from "./storage.js";
+import { getSavedTimes, recalculateRanks, saveTimes } from "./storage.js";
 
 // --- DOM Elements ---
 const timesCard = document.querySelector("#times .card");
-const timesBtn = document.getElementById("timesBtn");
-const timesBackBtn = document.getElementById("timesBackBtn");
 const switchSortOrderBtn = document.getElementById("switchSortOrder");
 const exportTimesBtn = document.getElementById("exportTimes");
 const importTimesBtn = document.getElementById("importTimes");
@@ -124,7 +122,7 @@ function getOrCreateDeleteConfirmPopup() {
     return modal;
 }
 
-function hideDeleteConfirmPopup() {
+export function hideDeleteConfirmPopup() {
     pendingDeleteSolveId = null;
     const modal = document.querySelector(".delete-confirm-popup");
     if (modal) {
@@ -178,7 +176,7 @@ function getOrCreateOptionsPopup() {
     return popup;
 }
 
-function hideOptionsPopup() {
+export function hideOptionsPopup() {
     activeSolveId = null;
     const popup = document.querySelector(".item-options-popup");
     if (popup) {
@@ -191,7 +189,6 @@ function openOptionsPopup(svgElement, solveId) {
     const popup = getOrCreateOptionsPopup();
     const rect = svgElement.getBoundingClientRect();
 
-    // Align top-right of popup with top-right of SVG; expands leftward and downward
     popup.style.top = `${rect.top}px`;
     popup.style.right = `${window.innerWidth - rect.right}px`;
     popup.style.left = "auto";
@@ -299,7 +296,7 @@ export function renderTimes() {
             <p class="timelistDate">${dateStr}</p>
             <p class="timelistNumber">${numberStr}</p>
             <p class="timelistModification">${modificationStr}</p>
-            <svg class="timelistOptions" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+            <svg class="timelistOptions" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" viewBox="0 0 24 24" fill="none"
                 stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                 <path d="M4 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
@@ -319,17 +316,6 @@ export function renderTimes() {
 }
 
 // --- Event Listeners ---
-timesBtn?.addEventListener("click", () => {
-    renderTimes();
-    showSection("times");
-});
-
-timesBackBtn?.addEventListener("click", () => {
-    hideOptionsPopup();
-    hideDeleteConfirmPopup();
-    showSection("timer");
-});
-
 switchSortOrderBtn?.addEventListener("click", () => {
     currentSortIndex = (currentSortIndex + 1) % SORT_MODES.length;
     renderTimes();
