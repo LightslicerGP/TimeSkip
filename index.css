@@ -134,6 +134,7 @@ nav>#BL {
 #statsBR {
     position: fixed;
     bottom: 32px;
+    max-width: calc((100vw - (32px * 3)) / 2);
 }
 
 #statsBL>p,

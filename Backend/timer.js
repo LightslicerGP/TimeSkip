@@ -1,5 +1,6 @@
 import { formatMs, getSolveTotalMs } from "./formatters.js";
-import { getSavedTimes, saveTimes, showSection } from "./storage.js";
+import { getSavedTimes, getStatsConfig, saveTimes, showSection } from "./storage.js";
+import { computeStatValue, STATS_BY_ID } from "./statsRegistry.js";
 
 // --- Constants ---
 const HOLD_DELAY = 500;
@@ -12,14 +13,29 @@ const STAGES = {
 const SCRAMBLE_SIDES = ["U", "R", "F", "D", "L", "B"];
 const SCRAMBLE_MOVES = ["", "2", "'"];
 const SCRAMBLE_OPPOSITES = { U: "D", D: "U", R: "L", L: "R", F: "B", B: "F" };
+const SESSION_START_KEY = "timeskipSessionStart";
 
 // --- DOM Elements ---
 const timerSection = document.getElementById("timer");
 const timerTextEl = document.getElementById("time");
 const scrambleEl = document.getElementById("scramble");
+const statsBLEl = document.getElementById("statsBL");
+const statsBREl = document.getElementById("statsBR");
 const navEl = document.querySelector("#timer nav");
 const fullscreenBtn = document.getElementById("fullscreenBtn");
 const settingsBtn = document.getElementById("settingsBtn");
+
+// --- Session Tracking ---
+function getSessionStart() {
+    let start = sessionStorage.getItem(SESSION_START_KEY);
+    if (!start) {
+        start = new Date().toISOString();
+        sessionStorage.setItem(SESSION_START_KEY, start);
+    }
+    return start;
+}
+
+const sessionStart = getSessionStart();
 
 // --- State ---
 let currentStageIndex = 0;
@@ -39,6 +55,7 @@ export class Time {
         this.minutes = Number(minutes) || 0;
         this.category = String(category || "3x3");
         this.datetime = new Date().toISOString();
+        this.modification = "";
         this.ordinalRank = 0;
     }
 
@@ -54,6 +71,43 @@ export class Time {
 // --- Preferences ---
 const showTimeWhileSolving = () => localStorage.getItem("showTimeWhileSolving") === "true";
 const showScramblePref = () => localStorage.getItem("showScramble") === "true";
+
+// --- Timer Stats Rendering ---
+function renderSideStats(containerEl, sideItems, solves, context) {
+    if (!containerEl) return;
+
+    const enabledItems = (sideItems || []).filter((entry) => entry && entry.enabled);
+    containerEl.innerHTML = "";
+
+    enabledItems.forEach((entry) => {
+        const meta = STATS_BY_ID.get(entry.id);
+        const label = meta ? meta.label : entry.id;
+        const value = computeStatValue(entry.id, solves, context);
+
+        const p = document.createElement("p");
+        p.dataset.statId = entry.id;
+        p.textContent = `${label}: ${value}`;
+        containerEl.appendChild(p);
+    });
+}
+
+export function renderTimerStats() {
+    const config = getStatsConfig();
+    const solves = getSavedTimes();
+    const context = {
+        now: new Date(),
+        sessionStart
+    };
+
+    renderSideStats(statsBLEl, config.left, solves, context);
+    renderSideStats(statsBREl, config.right, solves, context);
+}
+
+export function updateStatsVisibility() {
+    const isReady = STAGE_ORDER[currentStageIndex] === "READY";
+    statsBLEl?.classList.toggle("removed", !isReady);
+    statsBREl?.classList.toggle("removed", !isReady);
+}
 
 // --- Scramble Logic ---
 function generateScramble(length = 20) {
@@ -104,9 +158,11 @@ function updateStageUI() {
     applyBackgroundColor();
     navEl.classList.toggle("removed", stageKey === "INSPECTION" || stageKey === "TIMING");
     updateScrambleVisibility();
+    updateStatsVisibility();
 
     if (stageKey === "READY") {
         refreshScramble();
+        renderTimerStats();
     } else if (stageKey === "INSPECTION") {
         timerTextEl.textContent = inspectionTimeLeft;
     }

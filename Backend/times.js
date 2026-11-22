@@ -1,5 +1,6 @@
 import { formatDate, formatMs, getOrdinalSuffix, getSolveTotalMs } from "./formatters.js";
 import { getSavedTimes, recalculateRanks, saveTimes } from "./storage.js";
+import { renderTimerStats } from "./timer.js";
 
 // --- DOM Elements ---
 const timesCard = document.querySelector("#times .card");
@@ -60,6 +61,7 @@ function toggleModification(solveId, targetMod) {
 
     saveTimes(times);
     renderTimes();
+    renderTimerStats();
 }
 
 function deleteSolveById(solveId) {
@@ -67,6 +69,7 @@ function deleteSolveById(solveId) {
     const filtered = times.filter((item) => item.id !== solveId);
     saveTimes(filtered);
     renderTimes();
+    renderTimerStats();
     showPopup("Deleted time");
 }
 
@@ -246,6 +249,7 @@ function importTimesFromJson() {
 
             saveTimes(validSolves);
             renderTimes();
+            renderTimerStats();
             showPopup(`Imported ${validSolves.length} time${validSolves.length === 1 ? "" : "s"}`);
         } catch {
             showPopup("Failed to import JSON");
