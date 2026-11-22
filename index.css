@@ -130,6 +130,26 @@ nav>#BL {
     user-select: none;
 }
 
+#statsBL,
+#statsBR {
+    position: fixed;
+    bottom: 32px;
+}
+
+#statsBL>p,
+#statsBR>p {
+    font-size: 12px;
+    color: #FFFFFF;
+}
+
+#statsBL {
+    left: 32px;
+}
+
+#statsBR {
+    right: 32px;
+}
+
 #settings {
     margin-bottom: 128px;
 }
