@@ -46,12 +46,16 @@ svg {
 body {
     padding-top: env(safe-area-inset-top);
     /* iOS notch space */
-    /* margin-bottom: 96px !important; */
     overflow-x: hidden;
+    transition: none;
 }
 
 body:has(#timer:not(.removed)) {
     margin-bottom: 0px !important;
+}
+
+body:has(#settings:not(.removed)) {
+    margin-bottom: 112px !important;
 }
 
 section {
@@ -151,9 +155,9 @@ nav>#BL {
     right: 32px;
 }
 
-#settings {
-    margin-bottom: 128px;
-}
+/* #settings {
+    margin-bottom: 112px;
+} */
 
 #statsConfig {
     padding: 24px;

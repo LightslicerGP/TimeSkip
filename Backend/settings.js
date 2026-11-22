@@ -56,15 +56,28 @@ function syncOrderFromDom() {
     }
 }
 
+function getEnabledFirstOrder(sideItems) {
+    const enabled = sideItems.filter((item) => item && item.enabled);
+    const disabled = sideItems.filter((item) => !item || !item.enabled);
+    return [...enabled, ...disabled];
+}
+
 // --- Stats List Rendering ---
 function renderStatsList() {
     if (!statsListEl) return;
 
     statsConfig = getStatsConfig();
-    const sideItems = statsConfig[currentSide];
+    const sortedSide = getEnabledFirstOrder(statsConfig[currentSide]);
+    const orderChanged = sortedSide.some((item, idx) => item.id !== statsConfig[currentSide][idx]?.id);
+
+    statsConfig[currentSide] = sortedSide;
+    if (orderChanged) {
+        statsConfig = saveStatsConfig(statsConfig);
+    }
+
     statsListEl.innerHTML = "";
 
-    sideItems.forEach((item) => {
+    sortedSide.forEach((item) => {
         const labelText = STAT_LABELS.get(item.id) || item.id;
 
         const li = document.createElement("li");
