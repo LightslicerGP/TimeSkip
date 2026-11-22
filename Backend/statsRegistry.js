@@ -147,29 +147,29 @@ function computeFilteredMean(filteredSolves) {
 
 export const STATS_REGISTRY = [
     {
-        id: "best-successive-ao3-improvement",
+        id: "best-ao3-improvement",
         label: "best ao3 improvement",
         compute: (solves) => computeBestSuccessiveImprovement(solves, 3)
     },
     {
-        id: "best-successive-ao5-improvement",
+        id: "best-ao5-improvement",
         label: "best ao5 improvement",
         compute: (solves) => computeBestSuccessiveImprovement(solves, 5)
     },
     {
-        id: "best-successive-ao7-improvement",
+        id: "best-ao7-improvement",
         label: "best ao7 improvement",
         compute: (solves) => computeBestSuccessiveImprovement(solves, 7)
     },
     {
-        id: "best-successive-ao12-improvement",
+        id: "best-ao12-improvement",
         label: "best ao12 improvement",
         compute: (solves) => computeBestSuccessiveImprovement(solves, 12)
     },
 
     {
-        id: "last-ao3",
-        label: "last ao3",
+        id: "ao3",
+        label: "ao3",
         compute: (solves) => computeLastWindowAvg(solves, 3, false)
     },
     {
@@ -179,13 +179,13 @@ export const STATS_REGISTRY = [
     },
 
     {
-        id: "last-ao5",
-        label: "last ao5",
+        id: "ao5",
+        label: "ao5",
         compute: (solves) => computeLastWindowAvg(solves, 5, false)
     },
     {
-        id: "truncated-last-ao5",
-        label: "last truncated ao5",
+        id: "truncated-ao5",
+        label: "truncated ao5",
         compute: (solves) => computeLastWindowAvg(solves, 5, true)
     },
     {
@@ -200,13 +200,13 @@ export const STATS_REGISTRY = [
     },
 
     {
-        id: "last-ao7",
-        label: "last ao7",
+        id: "ao7",
+        label: "ao7",
         compute: (solves) => computeLastWindowAvg(solves, 7, false)
     },
     {
-        id: "truncated-last-ao7",
-        label: "last truncated ao7",
+        id: "truncated-ao7",
+        label: "truncated ao7",
         compute: (solves) => computeLastWindowAvg(solves, 7, true)
     },
     {
@@ -221,13 +221,13 @@ export const STATS_REGISTRY = [
     },
 
     {
-        id: "last-ao12",
-        label: "last ao12",
+        id: "ao12",
+        label: "ao12",
         compute: (solves) => computeLastWindowAvg(solves, 12, false)
     },
     {
-        id: "truncated-last-ao12",
-        label: "last truncated ao12",
+        id: "truncated-ao12",
+        label: "truncated ao12",
         compute: (solves) => computeLastWindowAvg(solves, 12, true)
     },
     {
@@ -236,7 +236,7 @@ export const STATS_REGISTRY = [
         compute: (solves) => computeBestWindowAvg(solves, 12, false)
     },
     {
-        id: "best-truncated-last-ao12",
+        id: "best-truncated-ao12",
         label: "best truncated ao12",
         compute: (solves) => computeBestWindowAvg(solves, 12, true)
     },
@@ -285,27 +285,27 @@ export const STATS_REGISTRY = [
     },
     {
         id: "ao50",
-        label: "last ao50",
+        label: "ao50",
         compute: (solves) => computeLastWindowAvg(solves, 50, false)
     },
     {
         id: "ao100",
-        label: "last ao100",
+        label: "ao100",
         compute: (solves) => computeLastWindowAvg(solves, 100, false)
     },
     {
         id: "ao250",
-        label: "last ao250",
+        label: "ao250",
         compute: (solves) => computeLastWindowAvg(solves, 250, false)
     },
     {
         id: "ao500",
-        label: "last ao500",
+        label: "ao500",
         compute: (solves) => computeLastWindowAvg(solves, 500, false)
     },
     {
         id: "ao1000",
-        label: "last ao1000",
+        label: "ao1000",
         compute: (solves) => computeLastWindowAvg(solves, 1000, false)
     },
 
