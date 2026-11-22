@@ -3,6 +3,7 @@ import { getStatsConfig, saveStatsConfig, showSection } from "./storage.js";
 import { STATS_REGISTRY } from "./statsRegistry.js";
 
 // --- DOM Elements ---
+const settingsBtn = document.getElementById("settingsBtn");
 const settingsBackBtn = document.getElementById("settingsBackBtn");
 const showTimeSwitch = document.getElementById("showTimeDuringSolveSwitch");
 const showScrambleSwitch = document.getElementById("showScramble");
@@ -25,15 +26,41 @@ const savedScrambleLength = localStorage.getItem("scrambleLength") || "20";
 scrambleSlider.value = savedScrambleLength;
 sliderValueSpan.textContent = savedScrambleLength;
 
-function syncStatsImmediate() {
+function commitAndSyncStats() {
     statsConfig = saveStatsConfig(statsConfig);
     renderTimerStats();
+}
+
+function setStatEnabled(statId, enabled) {
+    const target = statsConfig[currentSide].find((entry) => entry.id === statId);
+    if (!target || target.enabled === enabled) return;
+    target.enabled = enabled;
+    commitAndSyncStats();
+}
+
+function syncOrderFromDom() {
+    const orderedIds = [...statsListEl.querySelectorAll("[data-stat-id]")].map(
+        (el) => el.dataset.statId
+    );
+    const byId = new Map(statsConfig[currentSide].map((entry) => [entry.id, entry]));
+    const nextList = orderedIds.map((id) => byId.get(id)).filter(Boolean);
+
+    const prevIds = statsConfig[currentSide].map((entry) => entry.id);
+    const changed =
+        nextList.length === prevIds.length &&
+        nextList.some((entry, idx) => entry.id !== prevIds[idx]);
+
+    if (changed) {
+        statsConfig[currentSide] = nextList;
+        commitAndSyncStats();
+    }
 }
 
 // --- Stats List Rendering ---
 function renderStatsList() {
     if (!statsListEl) return;
 
+    statsConfig = getStatsConfig();
     const sideItems = statsConfig[currentSide];
     statsListEl.innerHTML = "";
 
@@ -66,9 +93,9 @@ function renderStatsList() {
 
         const checkbox = li.querySelector("input[type='checkbox']");
         checkbox.addEventListener("change", (e) => {
-            item.enabled = e.target.checked;
-            li.classList.toggle("is-enabled", item.enabled);
-            syncStatsImmediate();
+            const isChecked = Boolean(e.target.checked);
+            li.classList.toggle("is-enabled", isChecked);
+            setStatEnabled(item.id, isChecked);
         });
 
         const handle = li.querySelector(".stat-drag-handle");
@@ -89,6 +116,7 @@ function startDrag(event, itemEl) {
     const placeholder = document.createElement("li");
     placeholder.className = "stat-config-placeholder";
     placeholder.style.height = `${itemRect.height}px`;
+    placeholder.dataset.statId = itemEl.dataset.statId;
 
     itemEl.style.width = `${itemRect.width}px`;
     itemEl.style.top = `${itemRect.top - listRect.top}px`;
@@ -107,10 +135,15 @@ function startDrag(event, itemEl) {
             return moveEvent.clientY < sibRect.top + sibRect.height / 2;
         });
 
+        const prevNext = placeholder.nextElementSibling;
         if (nextSibling) {
-            statsListEl.insertBefore(placeholder, nextSibling);
-        } else {
+            if (prevNext !== nextSibling) {
+                statsListEl.insertBefore(placeholder, nextSibling);
+                syncOrderFromDom();
+            }
+        } else if (placeholder.nextElementSibling !== null) {
             statsListEl.appendChild(placeholder);
+            syncOrderFromDom();
         }
     };
 
@@ -126,12 +159,7 @@ function startDrag(event, itemEl) {
         itemEl.style.width = "";
         itemEl.style.top = "";
 
-        const newOrderIds = [...statsListEl.querySelectorAll(".stat-config-item")].map(
-            (el) => el.dataset.statId
-        );
-        const itemMap = new Map(statsConfig[currentSide].map((entry) => [entry.id, entry]));
-        statsConfig[currentSide] = newOrderIds.map((id) => itemMap.get(id)).filter(Boolean);
-        syncStatsImmediate();
+        syncOrderFromDom();
     };
 
     document.addEventListener("pointermove", onPointerMove);
@@ -173,8 +201,12 @@ scrambleSlider.addEventListener("input", (e) => {
     localStorage.setItem("scrambleLength", val);
 });
 
+settingsBtn?.addEventListener("click", () => {
+    renderStatsList();
+});
+
 settingsBackBtn.addEventListener("click", () => {
-    syncStatsImmediate();
+    commitAndSyncStats();
     showSection("timer");
     updateScrambleVisibility();
     refreshScramble();
@@ -182,3 +214,4 @@ settingsBackBtn.addEventListener("click", () => {
 
 // --- Initial Render ---
 renderStatsList();
+renderTimerStats();
