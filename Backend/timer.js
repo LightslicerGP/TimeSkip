@@ -71,6 +71,7 @@ export class Time {
 // --- Preferences ---
 const showTimeWhileSolving = () => localStorage.getItem("showTimeWhileSolving") === "true";
 const showScramblePref = () => localStorage.getItem("showScramble") === "true";
+const isReadyStage = () => STAGE_ORDER[currentStageIndex] === "READY";
 
 // --- Timer Stats Rendering ---
 function renderSideStats(containerEl, sideItems, solves, context) {
@@ -91,7 +92,20 @@ function renderSideStats(containerEl, sideItems, solves, context) {
     });
 }
 
+export function updateStatsVisibility() {
+    const ready = isReadyStage();
+    statsBLEl?.classList.toggle("removed", !ready);
+    statsBREl?.classList.toggle("removed", !ready);
+    if (!ready) {
+        if (statsBLEl) statsBLEl.innerHTML = "";
+        if (statsBREl) statsBREl.innerHTML = "";
+    }
+}
+
 export function renderTimerStats() {
+    updateStatsVisibility();
+    if (!isReadyStage()) return;
+
     const config = getStatsConfig();
     const solves = getSavedTimes();
     const context = {
@@ -101,12 +115,6 @@ export function renderTimerStats() {
 
     renderSideStats(statsBLEl, config.left, solves, context);
     renderSideStats(statsBREl, config.right, solves, context);
-}
-
-export function updateStatsVisibility() {
-    const isReady = STAGE_ORDER[currentStageIndex] === "READY";
-    statsBLEl?.classList.toggle("removed", !isReady);
-    statsBREl?.classList.toggle("removed", !isReady);
 }
 
 // --- Scramble Logic ---
@@ -134,8 +142,8 @@ export function refreshScramble() {
 
 export function updateScrambleVisibility() {
     if (!scrambleEl) return;
-    const isReady = STAGE_ORDER[currentStageIndex] === "READY";
-    scrambleEl.classList.toggle("removed", !(isReady && showScramblePref()));
+    const ready = isReadyStage();
+    scrambleEl.classList.toggle("removed", !(ready && showScramblePref()));
 }
 
 // --- Timer & Stage Logic ---
