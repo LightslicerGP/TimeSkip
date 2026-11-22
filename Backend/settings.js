@@ -15,6 +15,7 @@ const statsListEl = document.getElementById("statsConfigList");
 
 // --- State ---
 const STAT_LABELS = new Map(STATS_REGISTRY.map((s) => [s.id, s.label]));
+const REGISTRY_INDEX = new Map(STATS_REGISTRY.map((s, idx) => [s.id, idx]));
 let currentSide = "left";
 let statsConfig = getStatsConfig();
 
@@ -56,9 +57,15 @@ function syncOrderFromDom() {
     }
 }
 
-function getEnabledFirstOrder(sideItems) {
+function getOrderedSideItems(sideItems) {
     const enabled = sideItems.filter((item) => item && item.enabled);
-    const disabled = sideItems.filter((item) => !item || !item.enabled);
+    const disabled = sideItems
+        .filter((item) => !item || !item.enabled)
+        .sort((a, b) => {
+            const idxA = REGISTRY_INDEX.get(a.id) ?? Number.MAX_SAFE_INTEGER;
+            const idxB = REGISTRY_INDEX.get(b.id) ?? Number.MAX_SAFE_INTEGER;
+            return idxA - idxB;
+        });
     return [...enabled, ...disabled];
 }
 
@@ -67,7 +74,7 @@ function renderStatsList() {
     if (!statsListEl) return;
 
     statsConfig = getStatsConfig();
-    const sortedSide = getEnabledFirstOrder(statsConfig[currentSide]);
+    const sortedSide = getOrderedSideItems(statsConfig[currentSide]);
     const orderChanged = sortedSide.some((item, idx) => item.id !== statsConfig[currentSide][idx]?.id);
 
     statsConfig[currentSide] = sortedSide;
