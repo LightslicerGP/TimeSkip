@@ -423,6 +423,60 @@ nav>#BL {
     color: #ff0000;
 }
 
+#leaderboard>.card {
+    padding: 0px;
+}
+
+.leaderboardItem {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    grid-template-areas:
+        "author time"
+        "date time";
+    align-items: center;
+    gap: 4px 16px;
+    padding: 24px;
+    box-sizing: border-box;
+}
+
+.leaderboardItem::after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: 48px;
+    width: calc(100% - 96px);
+    height: 4px;
+    border-radius: 2px;
+    background-color: #F2F2F2;
+}
+
+.leaderboardItem:last-child::after {
+    display: none;
+}
+
+.itemAuthor {
+    grid-area: author;
+    font-size: 24px;
+    align-self: start;
+}
+
+.itemTime {
+    grid-area: time;
+    font-size: 32px;
+    font-weight: bold;
+    align-self: center;
+    justify-self: end;
+    text-align: right;
+}
+
+.itemDate {
+    grid-area: date;
+    align-self: end;
+    color: #808080;
+}
+
 @media (prefers-color-scheme: dark) {
     #selectSide {
         background-color: #000000;
@@ -436,7 +490,8 @@ nav>#BL {
         background-color: #0d0d0d;
     }
 
-    .timelistItem::after {
+    .timelistItem::after,
+    .leaderboardItem::after {
         background-color: #0D0D0D;
     }
 
