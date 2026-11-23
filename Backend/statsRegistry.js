@@ -147,27 +147,6 @@ function computeFilteredMean(filteredSolves) {
 
 export const STATS_REGISTRY = [
     {
-        id: "best-ao3-improvement",
-        label: "best ao3 improvement",
-        compute: (solves) => computeBestSuccessiveImprovement(solves, 3)
-    },
-    {
-        id: "best-ao5-improvement",
-        label: "best ao5 improvement",
-        compute: (solves) => computeBestSuccessiveImprovement(solves, 5)
-    },
-    {
-        id: "best-ao7-improvement",
-        label: "best ao7 improvement",
-        compute: (solves) => computeBestSuccessiveImprovement(solves, 7)
-    },
-    {
-        id: "best-ao12-improvement",
-        label: "best ao12 improvement",
-        compute: (solves) => computeBestSuccessiveImprovement(solves, 12)
-    },
-
-    {
         id: "ao3",
         label: "ao3",
         compute: (solves) => computeLastWindowAvg(solves, 3, false)
@@ -176,6 +155,11 @@ export const STATS_REGISTRY = [
         id: "best-ao3",
         label: "best ao3",
         compute: (solves) => computeBestWindowAvg(solves, 3, false)
+    },
+    {
+        id: "best-ao3-improvement",
+        label: "best ao3 improvement",
+        compute: (solves) => computeBestSuccessiveImprovement(solves, 3)
     },
 
     {
@@ -198,6 +182,11 @@ export const STATS_REGISTRY = [
         label: "best truncated ao5",
         compute: (solves) => computeBestWindowAvg(solves, 5, true)
     },
+    {
+        id: "best-ao5-improvement",
+        label: "best ao5 improvement",
+        compute: (solves) => computeBestSuccessiveImprovement(solves, 5)
+    },
 
     {
         id: "ao7",
@@ -219,6 +208,11 @@ export const STATS_REGISTRY = [
         label: "best truncated ao7",
         compute: (solves) => computeBestWindowAvg(solves, 7, true)
     },
+    {
+        id: "best-ao7-improvement",
+        label: "best ao7 improvement",
+        compute: (solves) => computeBestSuccessiveImprovement(solves, 7)
+    },
 
     {
         id: "ao12",
@@ -239,6 +233,11 @@ export const STATS_REGISTRY = [
         id: "best-truncated-ao12",
         label: "best truncated ao12",
         compute: (solves) => computeBestWindowAvg(solves, 12, true)
+    },
+    {
+        id: "best-ao12-improvement",
+        label: "best ao12 improvement",
+        compute: (solves) => computeBestSuccessiveImprovement(solves, 12)
     },
 
     {

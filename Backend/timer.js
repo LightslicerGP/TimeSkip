@@ -22,6 +22,10 @@ const scrambleEl = document.getElementById("scramble");
 const statsBLEl = document.getElementById("statsBL");
 const statsBREl = document.getElementById("statsBR");
 const navEl = document.querySelector("#timer nav");
+const trEl = document.getElementById("TR");
+const zenModeBtn = document.getElementById("zenMode");
+const zenParentEl = zenModeBtn?.parentElement || null;
+const originalZenParentOpacity = zenParentEl ? zenParentEl.style.opacity : "";
 const fullscreenBtn = document.getElementById("fullscreenBtn");
 const settingsBtn = document.getElementById("settingsBtn");
 
@@ -40,6 +44,7 @@ const sessionStart = getSessionStart();
 // --- State ---
 let currentStageIndex = 0;
 let isPressed = false;
+let isZenMode = false;
 let inspectionInterval = null;
 let inspectionTimeLeft = 15;
 let inspectionHoldTimeout = null;
@@ -73,6 +78,26 @@ const showTimeWhileSolving = () => localStorage.getItem("showTimeWhileSolving") 
 const showScramblePref = () => localStorage.getItem("showScramble") === "true";
 const isReadyStage = () => STAGE_ORDER[currentStageIndex] === "READY";
 
+// --- Zen Mode ---
+function applyZenMode() {
+    trEl?.classList.toggle("removed", isZenMode);
+    fullscreenBtn?.classList.toggle("removed", isZenMode);
+
+    if (zenParentEl) {
+        zenParentEl.style.opacity = isZenMode ? "0.5" : originalZenParentOpacity;
+    }
+
+    updateStatsVisibility();
+    if (isReadyStage() && !isZenMode) {
+        renderTimerStats();
+    }
+}
+
+function toggleZenMode() {
+    isZenMode = !isZenMode;
+    applyZenMode();
+}
+
 // --- Timer Stats Rendering ---
 function renderSideStats(containerEl, sideItems, solves, context) {
     if (!containerEl) return;
@@ -93,10 +118,13 @@ function renderSideStats(containerEl, sideItems, solves, context) {
 }
 
 export function updateStatsVisibility() {
-    const ready = isReadyStage();
-    statsBLEl?.classList.toggle("removed", !ready);
-    statsBREl?.classList.toggle("removed", !ready);
-    if (!ready) {
+    const showStats = isReadyStage() && !isZenMode;
+    statsBLEl?.classList.toggle("removed", !isReadyStage());
+    statsBREl?.classList.toggle("removed", !isReadyStage());
+    statsBLEl?.classList.toggle("removed", isZenMode);
+    statsBREl?.classList.toggle("removed", isZenMode);
+
+    if (!showStats) {
         if (statsBLEl) statsBLEl.innerHTML = "";
         if (statsBREl) statsBREl.innerHTML = "";
     }
@@ -104,7 +132,7 @@ export function updateStatsVisibility() {
 
 export function renderTimerStats() {
     updateStatsVisibility();
-    if (!isReadyStage()) return;
+    if (!isReadyStage() || isZenMode) return;
 
     const config = getStatsConfig();
     const solves = getSavedTimes();
@@ -278,6 +306,11 @@ function handlePressUp() {
 }
 
 // --- Event Listeners ---
+zenModeBtn?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    toggleZenMode();
+});
+
 fullscreenBtn.addEventListener("click", () => {
     if (!document.documentElement.requestFullscreen) return;
     if (!document.fullscreenElement) {
@@ -314,4 +347,4 @@ document.addEventListener("touchend", (e) => {
 document.addEventListener("touchcancel", handlePressUp, { passive: true });
 
 // --- Init ---
-updateStageUI();
+updateStageUI(); 

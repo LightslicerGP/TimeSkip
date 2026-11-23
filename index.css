@@ -60,7 +60,6 @@ body:has(#settings:not(.removed)) {
 
 section {
     width: 100dvw;
-    min-height: 100dvh;
     overflow-y: auto;
     box-sizing: border-box;
 }
