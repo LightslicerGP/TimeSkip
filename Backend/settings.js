@@ -6,6 +6,7 @@ import { STATS_REGISTRY } from "./statsRegistry.js";
 const settingsBtn = document.getElementById("settingsBtn");
 const settingsBackBtn = document.getElementById("settingsBackBtn");
 const showTimeSwitch = document.getElementById("showTimeDuringSolveSwitch");
+const showStatsDuringZenSwitch = document.getElementById("showStatsDuringZenSwitch");
 const showScrambleSwitch = document.getElementById("showScramble");
 const scrambleSlider = document.querySelector("#scrambleLength input[type='range']");
 const sliderValueSpan = document.querySelector("#scrambleLength .slider-side");
@@ -21,6 +22,7 @@ let statsConfig = getStatsConfig();
 
 // --- Init General Settings ---
 showTimeSwitch.checked = localStorage.getItem("showTimeWhileSolving") === "true";
+showStatsDuringZenSwitch.checked = localStorage.getItem("showStatsDuringZen") === "true";
 showScrambleSwitch.checked = localStorage.getItem("showScramble") === "true";
 
 const savedScrambleLength = localStorage.getItem("scrambleLength") || "20";
@@ -209,6 +211,11 @@ selectSideTabs.forEach((tab) => {
 // --- General Settings Listeners ---
 showTimeSwitch.addEventListener("change", (e) => {
     localStorage.setItem("showTimeWhileSolving", e.target.checked);
+});
+
+showStatsDuringZenSwitch.addEventListener("change", (e) => {
+    localStorage.setItem("showStatsDuringZen", e.target.checked);
+    renderTimerStats();
 });
 
 showScrambleSwitch.addEventListener("change", (e) => {

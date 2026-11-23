@@ -75,8 +75,10 @@ export class Time {
 
 // --- Preferences ---
 const showTimeWhileSolving = () => localStorage.getItem("showTimeWhileSolving") === "true";
+const showStatsDuringZenPref = () => localStorage.getItem("showStatsDuringZen") === "true";
 const showScramblePref = () => localStorage.getItem("showScramble") === "true";
 const isReadyStage = () => STAGE_ORDER[currentStageIndex] === "READY";
+const shouldShowStats = () => isReadyStage() && (!isZenMode || showStatsDuringZenPref());
 
 // --- Zen Mode ---
 function applyZenMode() {
@@ -87,10 +89,7 @@ function applyZenMode() {
         zenParentEl.style.opacity = isZenMode ? "0.5" : originalZenParentOpacity;
     }
 
-    updateStatsVisibility();
-    if (isReadyStage() && !isZenMode) {
-        renderTimerStats();
-    }
+    renderTimerStats();
 }
 
 function toggleZenMode() {
@@ -118,11 +117,9 @@ function renderSideStats(containerEl, sideItems, solves, context) {
 }
 
 export function updateStatsVisibility() {
-    const showStats = isReadyStage() && !isZenMode;
-    statsBLEl?.classList.toggle("removed", !isReadyStage());
-    statsBREl?.classList.toggle("removed", !isReadyStage());
-    statsBLEl?.classList.toggle("removed", isZenMode);
-    statsBREl?.classList.toggle("removed", isZenMode);
+    const showStats = shouldShowStats();
+    statsBLEl?.classList.toggle("removed", !showStats);
+    statsBREl?.classList.toggle("removed", !showStats);
 
     if (!showStats) {
         if (statsBLEl) statsBLEl.innerHTML = "";
@@ -132,7 +129,7 @@ export function updateStatsVisibility() {
 
 export function renderTimerStats() {
     updateStatsVisibility();
-    if (!isReadyStage() || isZenMode) return;
+    if (!shouldShowStats()) return;
 
     const config = getStatsConfig();
     const solves = getSavedTimes();
@@ -347,4 +344,4 @@ document.addEventListener("touchend", (e) => {
 document.addEventListener("touchcancel", handlePressUp, { passive: true });
 
 // --- Init ---
-updateStageUI(); 
+updateStageUI();
