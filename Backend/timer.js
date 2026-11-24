@@ -27,6 +27,7 @@ const zenModeBtn = document.getElementById("zenMode");
 const zenParentEl = zenModeBtn?.parentElement || null;
 const originalZenParentOpacity = zenParentEl ? zenParentEl.style.opacity : "";
 const fullscreenBtn = document.getElementById("fullscreenBtn");
+const installBtn = document.getElementById("install-btn");
 const settingsBtn = document.getElementById("settingsBtn");
 
 // --- Session Tracking ---
@@ -84,6 +85,7 @@ const shouldShowStats = () => isReadyStage() && (!isZenMode || showStatsDuringZe
 function applyZenMode() {
     trEl?.classList.toggle("removed", isZenMode);
     fullscreenBtn?.classList.toggle("removed", isZenMode);
+    installBtn?.classList.toggle("removed", isZenMode);
 
     if (zenParentEl) {
         zenParentEl.style.opacity = isZenMode ? "0.5" : originalZenParentOpacity;
