@@ -1,7 +1,7 @@
 import { getSolveTotalMs } from "./formatters.js";
 import { STATS_REGISTRY } from "./statsRegistry.js";
 
-const SECTIONS = ["timer", "times", "leaderboard", "graph", "settings"];
+const SECTIONS = ["timer", "times", "leaderboard", "graph", "profile", "settings"];
 const STATS_CONFIG_KEY = "timerStatsConfig";
 
 export function showSection(targetId) {

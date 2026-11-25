@@ -1,7 +1,7 @@
 import { showSection } from "./storage.js";
 import { renderTimes } from "./times.js";
 
-const TAB_SECTIONS = ["times", "leaderboard", "graph"];
+const TAB_SECTIONS = ["times", "leaderboard", "graph", "profile"];
 const mainNav = document.querySelector("body > nav");
 const backBtns = document.querySelectorAll("body > nav #backBtn");
 
