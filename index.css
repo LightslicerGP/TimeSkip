@@ -54,10 +54,6 @@ body:has(#timer:not(.removed)) {
     margin-bottom: 0px !important;
 }
 
-body:has(#settings:not(.removed)) {
-    margin-bottom: 112px !important;
-}
-
 section {
     width: 100dvw;
     overflow-y: auto;
@@ -72,30 +68,6 @@ section {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-}
-
-nav>#TL {
-    position: fixed;
-    top: 32px;
-    left: 32px;
-}
-
-nav>#TR {
-    position: fixed;
-    top: 32px;
-    right: 32px;
-}
-
-nav>#BR {
-    position: fixed;
-    bottom: 32px;
-    right: 32px;
-}
-
-nav>#BL {
-    position: fixed;
-    bottom: 32px;
-    left: 32px;
 }
 
 .card {
@@ -311,7 +283,6 @@ nav>#BL {
 
 .timelistModification {
     grid-area: dnf;
-    font-size: 8px;
     text-align: right;
     color: #808080;
     align-self: start;

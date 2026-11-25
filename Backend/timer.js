@@ -22,9 +22,9 @@ const scrambleEl = document.getElementById("scramble");
 const statsBLEl = document.getElementById("statsBL");
 const statsBREl = document.getElementById("statsBR");
 const navEl = document.querySelector("#timer nav");
-const trEl = document.getElementById("TR");
+const trEl = document.querySelector("#timer .TR");
 const zenModeBtn = document.getElementById("zenMode");
-const zenParentEl = zenModeBtn?.parentElement || null;
+const zenParentEl = zenModeBtn?.closest(".TL") || zenModeBtn?.parentElement || null;
 const originalZenParentOpacity = zenParentEl ? zenParentEl.style.opacity : "";
 const fullscreenBtn = document.getElementById("fullscreenBtn");
 const installBtn = document.getElementById("install-btn");
@@ -46,6 +46,7 @@ const sessionStart = getSessionStart();
 let currentStageIndex = 0;
 let isPressed = false;
 let isZenMode = false;
+let wasInstallBtnHiddenBeforeZen = false;
 let inspectionInterval = null;
 let inspectionTimeLeft = 15;
 let inspectionHoldTimeout = null;
@@ -85,7 +86,15 @@ const shouldShowStats = () => isReadyStage() && (!isZenMode || showStatsDuringZe
 function applyZenMode() {
     trEl?.classList.toggle("removed", isZenMode);
     fullscreenBtn?.classList.toggle("removed", isZenMode);
-    installBtn?.classList.toggle("removed", isZenMode);
+
+    if (installBtn) {
+        if (isZenMode) {
+            wasInstallBtnHiddenBeforeZen = installBtn.classList.contains("removed");
+            installBtn.classList.add("removed");
+        } else if (!wasInstallBtnHiddenBeforeZen) {
+            installBtn.classList.remove("removed");
+        }
+    }
 
     if (zenParentEl) {
         zenParentEl.style.opacity = isZenMode ? "0.5" : originalZenParentOpacity;
@@ -346,4 +355,4 @@ document.addEventListener("touchend", (e) => {
 document.addEventListener("touchcancel", handlePressUp, { passive: true });
 
 // --- Init ---
-updateStageUI();
+updateStageUI(); 
