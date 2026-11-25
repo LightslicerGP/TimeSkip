@@ -352,6 +352,47 @@ nav>#BL {
     opacity: 1;
 }
 
+#switchSortOrderOptions {
+    position: fixed;
+    top: 0px;
+    right: 0px;
+    min-width: 144px;
+    display: flex;
+    flex-direction: column;
+    z-index: 1150;
+}
+
+#switchSortOrderOptions .sort-option {
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+    cursor: pointer;
+}
+
+#switchSortOrderOptions .sort-option:hover,
+#switchSortOrderOptions .sort-option:focus-visible {
+    outline: none;
+}
+
+#switchSortOrderOptions .sort-check {
+    width: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    opacity: 0;
+    flex-shrink: 0;
+}
+
+#switchSortOrderOptions .sort-option.is-selected .sort-check {
+    opacity: 1;
+}
+
 .item-options-popup {
     display: none;
     position: fixed;

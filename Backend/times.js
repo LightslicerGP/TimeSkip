@@ -5,17 +5,13 @@ import { renderTimerStats } from "./timer.js";
 // --- DOM Elements ---
 const timesCard = document.querySelector("#times .card");
 const switchSortOrderBtn = document.getElementById("switchSortOrder");
+const switchSortOrderOptionsEl = document.getElementById("switchSortOrderOptions");
+const sortOptionBtns = [...document.querySelectorAll("#switchSortOrderOptions .sort-option")];
 const exportTimesBtn = document.getElementById("exportTimes");
 const importTimesBtn = document.getElementById("importTimes");
 
 // --- State ---
 const SORT_MODES = ["newest-oldest", "oldest-newest", "quickest-slowest", "slowest-quickest"];
-const SORT_LABELS = {
-    "newest-oldest": "Sorted: Newest",
-    "oldest-newest": "Sorted: Oldest",
-    "quickest-slowest": "Sorted: Quickest",
-    "slowest-quickest": "Sorted: Slowest"
-};
 let currentSortIndex = 0;
 let activeSolveId = null;
 let pendingDeleteSolveId = null;
@@ -89,6 +85,30 @@ function showPopup(message) {
     popup._hideTimeout = setTimeout(() => {
         popup.classList.remove("visible");
     }, 2000);
+}
+
+// --- Sort Options Menu Helper ---
+function syncSortMenuSelection() {
+    const activeMode = SORT_MODES[currentSortIndex];
+    sortOptionBtns.forEach((btn) => {
+        btn.classList.toggle("is-selected", btn.dataset.sort === activeMode);
+    });
+}
+
+export function openSortOptionsMenu() {
+    if (!switchSortOrderOptionsEl) return;
+    hideOptionsPopup();
+    syncSortMenuSelection();
+    switchSortOrderOptionsEl.parentElement?.classList.remove("button");
+    switchSortOrderBtn?.classList.add("removed");
+    switchSortOrderOptionsEl.classList.remove("removed");
+}
+
+export function hideSortOptionsMenu() {
+    if (!switchSortOrderOptionsEl) return;
+    switchSortOrderOptionsEl.classList.add("removed");
+    switchSortOrderBtn?.classList.remove("removed");
+    switchSortOrderOptionsEl.parentElement?.classList.add("button");
 }
 
 // --- Delete Confirmation Modal Helper ---
@@ -320,10 +340,22 @@ export function renderTimes() {
 }
 
 // --- Event Listeners ---
-switchSortOrderBtn?.addEventListener("click", () => {
-    currentSortIndex = (currentSortIndex + 1) % SORT_MODES.length;
-    renderTimes();
-    showPopup(SORT_LABELS[SORT_MODES[currentSortIndex]]);
+switchSortOrderBtn?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    openSortOptionsMenu();
+});
+
+sortOptionBtns.forEach((btn) => {
+    btn.addEventListener("click", (event) => {
+        event.stopPropagation();
+        const nextIndex = SORT_MODES.indexOf(btn.dataset.sort);
+        if (nextIndex !== -1) {
+            currentSortIndex = nextIndex;
+            syncSortMenuSelection();
+            renderTimes();
+        }
+        hideSortOptionsMenu();
+    });
 });
 
 exportTimesBtn?.addEventListener("click", exportTimesToJson);
@@ -333,4 +365,14 @@ document.addEventListener("click", (event) => {
     if (!event.target.closest(".item-options-popup") && !event.target.closest(".timelistOptions")) {
         hideOptionsPopup();
     }
+    if (
+        switchSortOrderOptionsEl &&
+        !switchSortOrderOptionsEl.classList.contains("removed") &&
+        !event.target.closest("#switchSortOrderOptions") &&
+        !event.target.closest("#switchSortOrder")
+    ) {
+        hideSortOptionsMenu();
+    }
 });
+
+syncSortMenuSelection(); 
